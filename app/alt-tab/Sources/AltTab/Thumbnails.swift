@@ -38,6 +38,8 @@ enum Thumbnails {
     }
 
     static func cached(_ id: CGWindowID) -> NSImage? { cache[id] }
+    /// For `--demo`: a picture that was never captured, drawn by hand.
+    static func seed(_ id: CGWindowID, _ image: NSImage) { cache[id] = image }
 
     /// Photographs a window while it is the one being used, so that it already has a picture by
     /// the time it is a row in the switcher.

@@ -72,10 +72,62 @@ if arguments.contains("--restore-hotkeys") {
     exit(0)
 }
 
+/// A window list for pictures: only apps everyone has, titles that belong to no one.
+@MainActor
+func demoWindows() -> [WindowInfo] {
+    let script: [(bundle: String, title: String, width: CGFloat)] = [
+        ("com.apple.finder", "Downloads", 1100),
+        ("org.mozilla.firefox", "Swift.org", 1440),
+        ("com.apple.Safari", "Swift.org", 1440),
+        ("com.mitchellh.ghostty", "~/code", 960),
+        ("com.apple.Terminal", "~/code", 960),
+        ("com.apple.Preview", "poster.pdf", 800),
+        ("com.apple.Notes", "Groceries", 700),
+        ("com.apple.mail", "Inbox", 1300),
+        ("com.apple.iCal", "Week 39", 1400),
+        ("com.apple.Music", "Now Playing", 1000),
+        ("com.apple.TextEdit", "Untitled", 800),
+        ("com.apple.systempreferences", "Displays", 720),
+    ]
+    return script.enumerated().compactMap { i, entry in
+        guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: entry.bundle).first else { return nil }
+        let id = CGWindowID(900_000 + i)
+        Thumbnails.seed(id, demoPicture(width: entry.width, height: 860, seed: i))
+        return WindowInfo(id: id, pid: app.processIdentifier,
+                          appName: app.localizedName ?? entry.bundle, title: entry.title,
+                          element: nil, size: CGSize(width: entry.width, height: 860))
+    }
+}
+
+/// A window that never existed: a title bar, a sidebar or not, a few grey lines of content.
+func demoPicture(width: CGFloat, height: CGFloat, seed: Int) -> NSImage {
+    let image = NSImage(size: CGSize(width: width, height: height))
+    image.lockFocus()
+    NSColor(white: 0.97, alpha: 1).setFill()
+    NSRect(x: 0, y: 0, width: width, height: height).fill()
+    NSColor(white: 0.90, alpha: 1).setFill()
+    NSRect(x: 0, y: height - 52, width: width, height: 52).fill()
+    if seed % 2 == 0 {
+        NSColor(white: 0.93, alpha: 1).setFill()
+        NSRect(x: 0, y: 0, width: width * 0.22, height: height - 52).fill()
+    }
+    NSColor(white: 0.82, alpha: 1).setFill()
+    let left = seed % 2 == 0 ? width * 0.22 + 40 : 40
+    for row in 0..<12 {
+        let lineWidth = (width - left - 60) * [0.9, 0.6, 0.75, 0.45][(row + seed) % 4]
+        NSRect(x: left, y: height - 110 - CGFloat(row) * 56, width: lineWidth, height: 16).fill()
+    }
+    image.unlockFocus()
+    return image
+}
+
 if arguments.contains("--render") {
     MainActor.assumeIsolated {
         WindowList.prewarm()
-        let snapshot = WindowList.snapshot()
+        // `--demo` swaps the real windows for made-up ones: icons of well-known apps that
+        // happen to be running, invented titles, no pictures. For a screenshot that shows
+        // nobody's work.
+        let snapshot = arguments.contains("--demo") ? demoWindows() : WindowList.snapshot()
         for (i, window) in snapshot.enumerated() {
             let handle = window.element == nil ? "no element" : "ok"
             print("\(i)  \(window.appName) — \(window.title)  [wid \(window.id), \(handle)]")
