@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "instagram-unfollow-checker",
+  "version": "1.2",
+  "description": "Who unfollowed you, who you follow without a follow back, and the other way around.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ig-unfollow-checker@local",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "permissions": [
+    "storage",
+    "notifications"
+  ],
+  "host_permissions": [
+    "*://www.instagram.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://www.instagram.com/*"
+      ],
+      "js": [
+        "diff.js",
+        "scan.js"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "Unfollow checker",
+    "default_icon": "icon-32.png",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "bg.js",
+    "scripts": [
+      "bg.js"
+    ]
+  },
+  "icons": {
+    "16": "icon-16.png",
+    "32": "icon-32.png"
+  }
+}

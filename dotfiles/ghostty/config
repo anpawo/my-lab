@@ -1,0 +1,9 @@
+# Reprise du profil « Basic » de Terminal.app
+theme = Terminal Basic
+font-family = SF Mono
+font-size = 11
+
+# Terminal.app épaissit les traits via le lissage macOS ; Ghostty ne le fait pas par défaut
+font-thicken = true
+
+cursor-color = #000000

@@ -1,0 +1,22 @@
+/* Étagère Shorts de la home */
+ytd-rich-section-renderer:has(ytd-rich-shelf-renderer[is-shorts]),
+ytd-rich-section-renderer:has(ytm-shorts-lockup-view-model),
+/* Étagère Shorts des résultats de recherche / d'une chaîne */
+ytd-reel-shelf-renderer,
+grid-shelf-view-model,
+/* Shorts isolés dans les grilles (home, abonnements) */
+ytd-rich-item-renderer:has(a[href^="/shorts"]) {
+  display: none !important;
+}
+
+/* 4 vidéos par ligne au lieu de 3 */
+ytd-rich-grid-renderer {
+  --ytd-rich-grid-items-per-row: 4 !important;
+}
+
+/* Titres complets : YouTube les coupe à 2 lignes (-webkit-line-clamp) */
+#video-title.ytd-rich-grid-media,
+.ytLockupMetadataViewModelTitle {
+  -webkit-line-clamp: 3 !important;
+  max-height: none !important;
+}

@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "youtube-maxed",
+  "version": "1.0",
+  "description": "Vire les Shorts et les encarts promo de YouTube.",
+  "browser_specific_settings": {
+    "gecko": { "id": "youtube-maxed@local", "data_collection_permissions": { "required": ["none"] } }
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://www.youtube.com/*"],
+      "css": ["hide.css"],
+      "js": ["hide.js"]
+    }
+  ]
+}

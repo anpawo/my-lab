@@ -1,0 +1,20 @@
+#!/bin/sh
+# Attend le réseau, puis lance la commande. Un cron parti sans wifi ne rate pas son travail :
+# il rougit dans Fleet et il faut attendre le créneau suivant, alors qu'il suffisait d'attendre
+# la connexion. Report, pas échec — d'où le exit 0 quand on abandonne.
+#
+# ONLINE_WAIT : secondes d'attente avant d'abandonner (défaut 20 min). À garder sous
+# l'intervalle du job, sinon deux passages se marchent dessus.
+[ $# -gt 0 ] || { echo "usage: online <commande> [args...]" >&2; exit 64; }
+WAIT=${ONLINE_WAIT:-1200}
+deadline=$(( $(date +%s) + WAIT ))
+# Le test que macOS fait lui-même. Un portail captif répond 200 avec sa propre page, donc
+# c'est le mot dans le corps qui tranche, pas le code HTTP.
+until curl -sf -m 5 http://captive.apple.com/hotspot-detect.html 2>/dev/null | grep -q Success; do
+  if [ "$(date +%s)" -ge "$deadline" ]; then
+    echo "$(date '+%F %T') online: pas de réseau après $((WAIT / 60)) min, reporté au prochain créneau" >&2
+    exit 0
+  fi
+  sleep 90
+done
+exec "$@"
