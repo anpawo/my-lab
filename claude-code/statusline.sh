@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 input=$(cat)
 
-# Tout à gauche : un bloc rouge tant que le dernier prompt tapé a été coupé par Fleet
-# (le tampon `.stopped` du hook est plus récent que le tampon `.prompted`). Il disparaît
-# au prochain prompt, qui remet `.prompted` à jour.
+# Far left: a red block as long as the last typed prompt was cut off by Fleet
+# (the hook's `.stopped` marker is newer than the `.prompted` marker). It goes away
+# at the next prompt, which refreshes `.prompted`.
 sid=$(echo "$input" | jq -r '.session_id // empty' 2>/dev/null)
 stopmark=""
 if [[ -n "$sid" && -f "$HOME/.claude/fleet/state/$sid.stopped" ]]; then
@@ -12,9 +12,9 @@ if [[ -n "$sid" && -f "$HOME/.claude/fleet/state/$sid.stopped" ]]; then
   [[ "${stopped:-0}" -gt "${prompted:-0}" ]] && stopmark=$'\033[48;5;196m\033[97;1m STOPPED \033[0m '
 fi
 
-# Fleet a élu une session par groupe — celle que les autres nomment comme l'auteur de leur
-# brief — et écrit leurs ids là. Le dire ici parce que c'est le seul écran qu'on regarde quand
-# on est dedans : une session ne sait pas autrement qu'elle est la main de son dossier.
+# Fleet elected one session per group — the one the others name as the author of their
+# brief — and writes their ids there. Say it here because it's the only screen you look at
+# when you're inside: a session has no other way to know it's the head of its folder.
 if [[ -n "$sid" ]]; then
   group=$(awk -v s="$sid" '$1 == s { print $2; exit }' "$HOME/.claude/fleet/state/heads" 2>/dev/null)
 fi
@@ -32,7 +32,7 @@ SEP="${DIM}|${R}"
 OK='\033[38;5;62m'     # periwinkle — same blue as the path
 WARN='\033[38;5;179m'  # soft amber
 CRIT='\033[38;5;168m'  # dusty rose
-AGENT='\033[38;5;215m' # abricot — les agents en cours, distinct des barres d'usage
+AGENT='\033[38;5;215m' # apricot — running agents, distinct from the usage bars
 
 # Git-state hues, ordered by how much work exists in only one place.
 SYNCED='\033[38;5;71m'  # green — committed and pushed, nothing to lose
@@ -47,10 +47,10 @@ dir=$(echo "$input" | jq -r '.workspace.current_dir // .cwd // .workspace.projec
 repo="$dir"            # keep the real path; $dir gets tilde-shortened for display
 dir="${dir/#$HOME/~}"
 
-# Sous ~/self, le nom du projet suffit : tout le reste du chemin est du bruit commun.
+# Under ~/self, the project name is enough: the rest of the path is shared noise.
 case "$dir" in '~/self/'*) dir="${dir#'~/self/'}"; dir="${dir%%/*}";; esac
 
-# Un suffixe sur le dossier, rien de plus : « projet - fleet head ».
+# A suffix on the folder, nothing more: "project - fleet head".
 [[ -n "$group" ]] && dir="$dir ${PAREN}-${DIR} fleet head"
 
 # Last segment, answering the two questions I'd otherwise stop and run `git status` for:
@@ -78,24 +78,24 @@ else
   git_seg=" ${SEP} ${DIM}not a repo${R}"
 fi
 
-# Model: already formatted as "Sonnet 4.6", suivi du niveau d'effort (.effort.level :
-# low / medium / high / xhigh / max), absent des vieilles versions du CLI.
+# Model: already formatted as "Sonnet 4.6", followed by the effort level (.effort.level:
+# low / medium / high / xhigh / max), absent from old versions of the CLI.
 model=$(echo "$input" | jq -r '.model.display_name // .model // "?"' 2>/dev/null)
 model=${model%% (*}
 effort=$(echo "$input" | jq -r '.effort.level // empty' 2>/dev/null)
 [[ -n "$effort" ]] && model="${model} ${PAREN}-${MODEL} ${effort}"
 
-# Mode de permission, à gauche du modèle, même rouge et mêmes mots que la ligne de pied de page
-# que le patch binaire retire. Le payload ne le porte pas ; le journal de session
-# écrit une ligne `permission-mode` à chaque prompt, on prend la dernière. Un shift+tab entre
-# deux prompts n'apparaît donc qu'au prompt suivant.
-MODE_BYPASS='\033[38;2;171;43;63m' # le rouge exact de la ligne « bypass permissions on » de Claude Code
-MODE_EDIT='\033[38;5;179m'   # ambre
-MODE_PLAN='\033[38;5;62m'    # pervenche
+# Permission mode, left of the model, same red and same words as the footer line that the
+# binary patch removes. The payload doesn't carry it; the session journal writes a
+# `permission-mode` line at every prompt, we take the last one. A shift+tab between two
+# prompts therefore only shows up at the next prompt.
+MODE_BYPASS='\033[38;2;171;43;63m' # the exact red of Claude Code's "bypass permissions on" line
+MODE_EDIT='\033[38;5;179m'   # amber
+MODE_PLAN='\033[38;5;62m'    # periwinkle
 tp=$(echo "$input" | jq -r '.transcript_path // empty' 2>/dev/null)
 mode_seg=""
-# Le binaire patché (bullet-band.py) écrit le mode dans ~/.claude/sessions/<pid>.mode dès qu'il
-# change ; le transcript ne l'écrit qu'au prompt suivant. Fichier d'abord, transcript en secours.
+# The patched binary (bullet-band.py) writes the mode to ~/.claude/sessions/<pid>.mode as soon as
+# it changes; the transcript only writes it at the next prompt. File first, transcript as fallback.
 pm=$(cat "$HOME/.claude/sessions/${CLAUDE_PID:-$PPID}.mode" 2>/dev/null)
 if [[ -z "$pm" && -r "$tp" ]]; then
   pm=$(tail -c 200000 "$tp" 2>/dev/null | grep -oE '"type":"permission-mode","permissionMode":"[A-Za-z]+"' | tail -1)
@@ -162,13 +162,13 @@ if [[ -n "$fh_pct" && "$fh_pct" != "-" ]]; then
   fh_col=$(usage_color "$fh_pct")
   limits=" ${SEP} ${fh_col}${fh_pct}% usage ${PAREN}-${fh_col} reset $(countdown "$fh_reset")${R}"
 elif [[ -n "$sd_pct" && "$sd_pct" != "-" ]]; then
-  # Claude Code retire `five_hour` dès que sa fenêtre est passée sans nouvelle réponse
-  # (0 % de fait) : la semaine tient la barre en attendant, plutôt qu'un « loading » sans fin.
+  # Claude Code drops `five_hour` as soon as its window has passed with no new reply
+  # (0% in effect): the week holds the bar in the meantime, rather than an endless "loading".
   sd_col=$(usage_color "$sd_pct")
   limits=" ${SEP} ${sd_col}${sd_pct}% wk ${PAREN}-${sd_col} reset $(countdown "$sd_reset")${R}"
 else
-  # Les limites arrivent quelques secondes après le lancement : un « loading » qui avance à
-  # chaque rafraîchissement, sur une largeur fixe pour que la ligne ne bouge pas.
+  # The limits arrive a few seconds after launch: a "loading" that advances on every
+  # refresh, at a fixed width so the line doesn't move.
   dots=$(( $(date +%s) % 3 + 1 ))
   limits=" ${SEP} ${OK}$(printf 'loading usage%-3s' "$(printf '.%.0s' $(seq 1 $dots))")${R}"
 fi
@@ -179,14 +179,14 @@ if [[ -n "$fh_pct" && "$fh_pct" != "-" && -n "$sd_pct" && "$sd_pct" != "-" ]] &&
 fi
 
 
-# Agents en cours, lus dans le journal de session. Le payload ne porte pas
-# l'information mais il donne `transcript_path`, et le journal contient un
-# tool_use "Agent" au lancement puis un tool_result au retour : ce qui reste
-# sans resultat tourne encore.
+# Running agents, read from the session journal. The payload doesn't carry the
+# information but it gives `transcript_path`, and the journal holds a tool_use
+# "Agent" at launch then a tool_result on return: whatever is left without a
+# result is still running.
 #
-# Trois filtres en flux, jamais de contenu dans une variable bash — 4 Mo dans
-# un `<<<` coutent 1,7 s, la meme donnee en flux 100 ms. On ne lit que la fin
-# du journal : un agent encore actif a forcement ete lance recemment.
+# Three filters streamed, never any content in a bash variable — 4 MB in a
+# `<<<` costs 1.7 s, the same data streamed 100 ms. We only read the tail of
+# the journal: an agent still active was necessarily launched recently.
 FENETRE_AGENTS=1000000
 agents=""
 if [[ -r "$tp" ]]; then

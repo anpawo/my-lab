@@ -1,18 +1,18 @@
-// Tourne dans la page instagram.com : les requêtes sont same-origin, donc les
-// cookies de session partent tout seuls. Pas de scraping du DOM — l'app web
-// utilise elle-même cette API, et le modal ne charge que ce qui est scrollé.
-// Le popup se ferme dès qu'il perd le focus (alt-tab) et son JS meurt avec lui.
-// Le scan tourne donc ici, et le popup ne fait que lire le résultat dans storage.
+// Runs inside the instagram.com page: requests are same-origin, so the session
+// cookies go along on their own. No DOM scraping — the web app itself uses this
+// API, and the modal only loads what gets scrolled.
+// The popup closes as soon as it loses focus (alt-tab) and its JS dies with it.
+// So the scan runs here, and the popup only reads the result from storage.
 globalThis.browser ??= chrome;
 
-const CREATOR = 10000; // abonnés au-delà desquels ce n'est plus un vrai contact
-const LOOKUP_CAP = 100; // ponytail: borne les requêtes /info/, IG bloque au-delà
+const CREATOR = 10000; // followers beyond which this is no longer a real contact
+const LOOKUP_CAP = 100; // ponytail: caps the /info/ requests, IG blocks past that
 
-// ponytail: app id public du web IG, en dur. Si IG le change : le lire dans le HTML de la page.
+// ponytail: IG web's public app id, hardcoded. If IG changes it: read it from the page HTML.
 const APP_ID = "936619743392459";
 const uid = () => document.cookie.match(/ds_user_id=(\d+)/)?.[1];
 
-// URL absolue : dans un content script Firefox, fetch() ne résout pas le relatif
+// Absolute URL: in a Firefox content script, fetch() doesn't resolve relative paths
 const api = (path) =>
   fetch(`${location.origin}/api/v1/${path}`, {
     credentials: "include",
@@ -36,13 +36,13 @@ async function fetchAll(kind) {
     const d = await fetchPage(kind, cursor);
     users.push(...d.users.map((u) => ({ username: u.username, pk: u.pk, verified: u.is_verified })));
     cursor = d.next_max_id;
-    if (cursor) await wait(400); // IG throttle au-delà
+    if (cursor) await wait(400); // IG throttles past that
   } while (cursor);
   return users;
 }
 
-// Le nombre d'abonnés n'est pas dans la liste : une requête par compte, d'où
-// l'appel réservé à la liste croisée.
+// The follower count isn't in the list: one request per account, hence the
+// call being reserved for the cross list.
 async function followerCounts(pks) {
   const counts = {};
   for (const pk of pks) {
@@ -60,8 +60,8 @@ async function run() {
   try {
     if (!uid()) throw new Error("Not logged in to Instagram");
     const now = { followers: await fetchAll("followers"), following: await fetchAll("following") };
-    // Les listes renvoient des comptes que le profil ne compte plus (vu : 419 distincts
-    // listés pour 418 affichés) : les chiffres affichés viennent des compteurs d'IG.
+    // The lists return accounts the profile no longer counts (seen: 419 distinct
+    // listed for 418 displayed): the displayed numbers come from IG's counters.
     const r = await api(`users/${uid()}/info/`);
     const me = r.ok ? (await r.json()).user : null;
     const { snapshot } = await browser.storage.local.get("snapshot");
@@ -69,7 +69,7 @@ async function run() {
     const names = (users) => users.map((u) => u.username);
     const followers = names(now.followers);
     const since = snapshot ? diff(snapshot.followers, followers) : null;
-    // lost = je le suis, il ne me suit pas ; gained = il me suit, je ne le suis pas
+    // lost = I follow them, they don't follow me; gained = they follow me, I don't follow them
     const cross = diff(names(now.following), followers);
 
     const byName = new Map([...now.followers, ...now.following].map((u) => [u.username, u]));
@@ -111,5 +111,5 @@ async function run() {
 
 browser.runtime.onMessage.addListener((m, _sender, respond) => {
   if (m.cmd === "start") run();
-  respond(); // sans réponse, Chrome fait rejeter le sendMessage du popup
+  respond(); // without a response, Chrome makes the popup's sendMessage reject
 });

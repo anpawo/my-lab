@@ -1,9 +1,9 @@
 #!/bin/sh
-# Signe les deux extensions sur AMO (canal unlisted) puis les ouvre dans Firefox,
-# qui propose "Ajouter" : l'installation survit aux redémarrages.
-# Prérequis : clé API AMO dans ~/.web-ext-config.cjs
+# Signs both extensions on AMO (unlisted channel) then opens them in Firefox,
+# which offers "Add": the install survives restarts.
+# Prerequisite: AMO API key in ~/.web-ext-config.cjs
 #   https://addons.mozilla.org/developers/addon/api/key/
-# AMO refuse de re-signer une version déjà signée : bumper "version" dans manifest.json avant.
+# AMO refuses to re-sign an already signed version: bump "version" in manifest.json first.
 set -e
 out=$HOME/.local/share/firefox-extensions
 cd "$(dirname "$0")"

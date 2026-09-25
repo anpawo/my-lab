@@ -1,5 +1,5 @@
-// Chrome tue un service worker inactif 30 s : le scan (jusqu'à une minute
-// d'attente) tourne donc dans le content script, ici on ne fait que notifier.
+// Chrome kills a service worker idle for 30 s: the scan (up to a minute of
+// waiting) therefore runs in the content script; here we only notify.
 globalThis.browser ??= chrome;
 
 browser.runtime.onMessage.addListener((m, _sender, respond) => {

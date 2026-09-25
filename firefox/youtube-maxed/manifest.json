@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "youtube-maxed",
   "version": "1.0",
-  "description": "Vire les Shorts et les encarts promo de YouTube.",
+  "description": "Removes Shorts and promo cards from YouTube.",
   "browser_specific_settings": {
     "gecko": { "id": "youtube-maxed@local", "data_collection_permissions": { "required": ["none"] } }
   },

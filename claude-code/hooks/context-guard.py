@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""UserPromptSubmit : prévient quand le contexte de la session franchit un palier.
+"""UserPromptSubmit: warns when the session's context crosses a threshold.
 
-En tokens absolus et non en pourcentage de la fenêtre : sur 1 M, 402k s'affiche
-« 40 % » et paraît sain, alors que la qualité d'attention décroche bien avant —
-l'attention est quadratique, le seuil est absolu, pas une fraction du modèle.
+In absolute tokens, not as a percentage of the window: on 1M, 402k shows as
+"40%" and looks healthy, while attention quality drops off well before that —
+attention is quadratic, the threshold is absolute, not a fraction of the model.
 
-Un seul avertissement par palier franchi (état dans /tmp), remis à zéro quand le
-contexte redescend sous le premier palier — donc après un /clear ou un compactage.
+One warning per threshold crossed (state in /tmp), reset when the context drops
+back under the first threshold — so after a /clear or a compaction.
 """
 import json, os, sys
 
 STEPS = [100_000, 200_000, 400_000, 600_000, 800_000]
-TAIL = 1 << 20  # le dernier Mo du transcript suffit à trouver un bloc usage
+TAIL = 1 << 20  # the last MB of the transcript is enough to find a usage block
 
 
 def ctx_tokens(path):
@@ -22,7 +22,7 @@ def ctx_tokens(path):
             fh.seek(start)
             lines = fh.read().decode("utf-8", "ignore").split("\n")
             if start:
-                del lines[0]  # ligne tronquee par le seek, seulement si on a saute
+                del lines[0]  # line truncated by the seek, only if we skipped ahead
     except OSError:
         return 0
     for line in reversed(lines):
@@ -77,10 +77,10 @@ def main():
     except OSError:
         pass
 
-    print("[contexte] Cette session porte ~%dk tokens. Au-delà d'environ 100k, la "
-          "qualité d'attention baisse quel que soit le modèle et quelle que soit la "
-          "taille de la fenêtre. Si le sujet a changé depuis le début : /clear. "
-          "Sinon, ignore ce rappel — il ne reviendra qu'au palier suivant "
+    print("[context] This session holds ~%dk tokens. Beyond roughly 100k, attention "
+          "quality drops whatever the model and whatever the window size. If the "
+          "topic has changed since the start: /clear. Otherwise, ignore this "
+          "reminder — it will only come back at the next threshold "
           "(100k / 200k / 400k / 600k / 800k)." % (n // 1000))
 
 

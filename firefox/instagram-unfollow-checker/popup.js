@@ -13,8 +13,8 @@ const row = (u) =>
 const list = (title, users) =>
   users.length ? `<h2>${title} (${users.length})</h2><ul>${users.map(row).join("")}</ul>` : "";
 
-// Les créateurs sortent dans leur propre bloc : les suivre sans retour est normal,
-// c'est la liste des vraies personnes qui est actionnable.
+// Creators go in their own block: following them without a follow back is normal,
+// it's the list of real people that is actionable.
 const split = (title, users) =>
   list(title, users.filter((u) => !u.creator)) + list(`${title} — creators`, users.filter((u) => u.creator));
 

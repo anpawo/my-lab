@@ -63,9 +63,9 @@ set -x PYENV_ROOT $HOME/.pyenv
 fish_add_path $PYENV_ROOT/shims $PYENV_ROOT/bin
 
 
-# Ghostty a été lancé depuis une session Claude et a hérité de CLAUDE_CODE_CHILD_SESSION :
-# tout onglet ouvert depuis se dit session fille, et Claude Code ne garde pas le transcript
-# d'une session fille — d'où les tuiles « New session » sans nom ni historique dans Fleet.
+# Ghostty was launched from a Claude session and inherited CLAUDE_CODE_CHILD_SESSION:
+# every tab opened since calls itself a child session, and Claude Code doesn't keep the
+# transcript of a child session — hence the "New session" tiles with no name or history in Fleet.
 set -x CLAUDE_CODE_FORCE_SESSION_PERSISTENCE 1
 
 # Go to home

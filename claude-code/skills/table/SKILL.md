@@ -1,20 +1,20 @@
 ---
 name: table
-description: État d'un projet en un seul tableau à icônes — ✅ fait / 🟠 en cours / ❌ à faire ou cassé. Déclencheurs : "/table", "table todo", "what works and what doesn't", "où on en est", "status table".
+description: A project's state in a single icon table — ✅ done / 🟠 in progress / ❌ to do or broken. Triggers: "/table", "table todo", "what works and what doesn't", "where are we at", "où on en est", "status table".
 ---
 
 # table
 
-Un seul tableau markdown, rien d'autre. Pas de phrase avant, pas de phrase après, pas de « next steps ».
+One markdown table, nothing else. No sentence before, no sentence after, no "next steps".
 
-| Colonne | Contenu |
+| Column | Content |
 |---|---|
-| Item | nom court de la pièce (fichier, feature, démarche) |
-| Status | `✅` fait et vérifié · `🟠` en cours / pas encore branché / non vérifié · `❌` à faire, cassé, ou bloqué |
-| Note | ≤ 8 mots : ce qui manque ou ce qui bloque. Vide si ✅ |
+| Item | short name of the piece (file, feature, procedure) |
+| Status | `✅` done and verified · `🟠` in progress / not wired up yet / unverified · `❌` to do, broken, or blocked |
+| Note | ≤ 8 words: what is missing or what blocks. Empty if ✅ |
 
-Règles :
-- Lire l'état réel (fichiers, tests, logs, process) avant d'écrire ; jamais depuis la mémoire de la conversation seule.
-- `✅` seulement si vérifié dans la session (test vert, sortie vue). Écrit mais jamais exécuté = `🟠`.
-- Trier : ❌ en haut, puis 🟠, puis ✅.
-- Une ligne par pièce, pas de sous-tableaux, pas de sections. Si l'utilisateur donne un périmètre (`/table recon-v3`), s'y tenir.
+Rules:
+- Read the real state (files, tests, logs, processes) before writing; never from the conversation's memory alone.
+- `✅` only if verified in this session (green test, output seen). Written but never run = `🟠`.
+- Sort: ❌ on top, then 🟠, then ✅.
+- One row per piece, no sub-tables, no sections. If the user gives a scope (`/table recon-v3`), stick to it.

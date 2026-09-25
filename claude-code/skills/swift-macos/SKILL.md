@@ -1,90 +1,91 @@
 ---
 name: swift-macos
 description: >
-  Pièges vérifiés de la toolchain Swift/macOS SANS Xcode (Command Line Tools seuls) et du
-  fenêtrage macOS, sur cette machine. Charger dès qu'on écrit, compile, teste ou signe du
-  Swift/AppKit/Carbon, qu'on lit un titre ou une géométrie de fenêtre, qu'on capture l'écran,
-  ou qu'on veut un retour visuel d'une app GUI (AppKit, Qt/QML). Projets concernés : alt-tab,
-  vane, fleet, video-code. Déclencheurs : "swift test", "codesign", "titre de fenêtre",
-  "screencapture", "ouvrir la fenêtre pour vérifier", "Space"/"bureau", WindowRef, TCC.
+  Verified traps of the Swift/macOS toolchain WITHOUT Xcode (Command Line Tools only) and of
+  macOS windowing, on this machine. Load as soon as you write, compile, test or sign
+  Swift/AppKit/Carbon code, read a window title or geometry, capture the screen, or want
+  visual feedback from a GUI app (AppKit, Qt/QML). Projects concerned: alt-tab, vane, fleet,
+  video-code. Triggers: "swift test", "codesign", "window title", "titre de fenêtre",
+  "screencapture", "open the window to check", "ouvrir la fenêtre pour vérifier",
+  "Space"/"desktop"/"bureau", WindowRef, TCC.
 ---
 
-# Swift & macOS sans Xcode — ce qui casse en silence
+# Swift & macOS without Xcode — what breaks silently
 
-Xcode n'est **pas** installé, seulement les Command Line Tools. Tout ce qui suit en découle,
-et chaque point a été mesuré ici, pas lu. Le fil rouge : ces pièges **réussissent sans erreur**
-(exit 0, sortie vide, chaîne vide) et se lisent comme un bug dans le code qu'on vient d'écrire.
+Xcode is **not** installed, only the Command Line Tools. Everything below follows from that,
+and every point was measured here, not read. The common thread: these traps **succeed without
+an error** (exit 0, empty output, empty string) and read like a bug in the code you just wrote.
 
-## `swift test` est un vert silencieux, pas un run
+## `swift test` is a silent green, not a run
 
-`swift test` compile un bundle `.xctest` et **sort 0 sans rien exécuter** : XCTest vient avec
-Xcode, pas avec les CLT, donc rien ne charge le bundle. `swift test list` est vide aussi.
-- **Faire :** un `executableTarget` lancé par `swift run check`. Zéro dépendance, headless,
-  échoue fort. Précédent : `app/alt-tab/Sources/check`.
-- swift-testing est présent (`…/CommandLineTools/…/Testing.framework`) mais son **runner**
-  manque — le lier n'achète rien.
+`swift test` compiles a `.xctest` bundle and **exits 0 without running anything**: XCTest ships
+with Xcode, not with the CLT, so nothing loads the bundle. `swift test list` is empty too.
+- **Do this:** an `executableTarget` launched with `swift run check`. Zero dependencies,
+  headless, fails loudly. Precedent: `app/alt-tab/Sources/check`.
+- swift-testing is present (`…/CommandLineTools/…/Testing.framework`) but its **runner** is
+  missing — linking it buys nothing.
 
-## `WindowRef` est un typedef Carbon
+## `WindowRef` is a Carbon typedef
 
-Un target qui importe Carbon (`Carbon.HIToolbox`, pour `RegisterEventHotKey`) ne peut pas aussi
-définir un type nommé `WindowRef` : Quickdraw le typedef encore, chaque usage devient "ambiguous
-for type lookup". Même piège pour les autres noms de l'ère Quickdraw — renommer le type local.
+A target that imports Carbon (`Carbon.HIToolbox`, for `RegisterEventHotKey`) cannot also
+define a type named `WindowRef`: Quickdraw still typedefs it, every use becomes "ambiguous
+for type lookup". Same trap for the other Quickdraw-era names — rename the local type.
 
-## Un titre de fenêtre coûte toujours une autorisation TCC
+## A window title always costs a TCC authorization
 
-Le chemin privé `CGSCopyWindowProperty(cid, wid, "kCGSWindowTitle")` est gaté **exactement comme**
-le public `kCGWindowName` sur macOS 26.5 : depuis un `.app` signé sans Accessibilité ni Screen
-Recording, il renvoie `kCGErrorSuccess` et une **chaîne vide** pour toute fenêtre. Le "truc des
-titres sans permission" qui circule dans les repos de switchers est mort ici.
-- Les titres coûtent Accessibilité (`kAXTitleAttribute`) ou Screen Recording (`kCGWindowName`) —
-  choisir **lequel**, pas **si**. Sonde de 60 lignes de C rejouable dans l'historique d'`alt-tab`.
+The private path `CGSCopyWindowProperty(cid, wid, "kCGSWindowTitle")` is gated **exactly like**
+the public `kCGWindowName` on macOS 26.5: from a signed `.app` with neither Accessibility nor
+Screen Recording, it returns `kCGErrorSuccess` and an **empty string** for every window. The
+"titles without permission trick" floating around switcher repos is dead here.
+- Titles cost Accessibility (`kAXTitleAttribute`) or Screen Recording (`kCGWindowName`) —
+  choose **which**, not **whether**. A replayable 60-line C probe lives in `alt-tab`'s history.
 
-## Une fenêtre minimisée change de sous-rôle AX
+## A minimized window changes its AX subrole
 
-Une fenêtre minimisée (ou d'app masquée) répond `kAXSubroleAttribute` = **`AXDialog`**, pas
-`AXStandardWindow`. La règle "le sous-rôle standard est tout le filtre" rend donc les fenêtres
-minimisées structurellement invisibles à un switcher, et ça ressemble à AX qui ne les reporte pas.
-Il les reporte : `kAXWindowsAttribute` les liste, `_AXUIElementGetWindow` donne un id valide,
-`CGSCopySpacesForWindows` donne encore leur Space. Elles sont absentes de
-`CGWindowListCopyWindowInfo(.optionOnScreenOnly)` ; `.optionAll` les a mais les noie sous ~80
-surfaces offscreen — **AX est la seule source utilisable**. Confirmé macOS 26.5, Firefox + app Swift.
+A minimized window (or one of a hidden app) answers `kAXSubroleAttribute` = **`AXDialog`**, not
+`AXStandardWindow`. The rule "the standard subrole is the whole filter" therefore makes
+minimized windows structurally invisible to a switcher, and it looks like AX not reporting them.
+It does report them: `kAXWindowsAttribute` lists them, `_AXUIElementGetWindow` gives a valid id,
+`CGSCopySpacesForWindows` still gives their Space. They are absent from
+`CGWindowListCopyWindowInfo(.optionOnScreenOnly)`; `.optionAll` has them but drowns them among
+~80 offscreen surfaces — **AX is the only usable source**. Confirmed on macOS 26.5, Firefox + Swift app.
 
-## Signer déclenche des dialogues GUI qui bloquent un shell non-interactif
+## Signing triggers GUI dialogs that block a non-interactive shell
 
-`security add-trusted-cert` et le premier `codesign` avec une identité fraîche lèvent des
-**dialogues mot de passe** qui bloquent un shell non-interactif pour toujours. Un agent ne passe
-pas ; **c'est à Marius de lancer `./make-signing-identity.sh`**. L'identité s'importe sans l'étape
-de confiance, mais `codesign` prompte quand même.
-- Les défauts PKCS#12 d'OpenSSL moderne (AES-256/PBES2) sont rejetés par `SecKeychainItemImport` :
-  `-certpbe PBE-SHA1-3DES -keypbe PBE-SHA1-3DES -macalg sha1` + mot de passe **non vide** requis.
-  Script qui marche : `app/alt-tab/make-signing-identity.sh`.
+`security add-trusted-cert` and the first `codesign` with a fresh identity raise **password
+dialogs** that block a non-interactive shell forever. An agent cannot get through; **Marius
+has to run `./make-signing-identity.sh` himself**. The identity imports without the trust
+step, but `codesign` still prompts.
+- Modern OpenSSL's PKCS#12 defaults (AES-256/PBES2) are rejected by `SecKeychainItemImport`:
+  `-certpbe PBE-SHA1-3DES -keypbe PBE-SHA1-3DES -macalg sha1` + a **non-empty** password required.
+  Working script: `app/alt-tab/make-signing-identity.sh`.
 
-## `screencapture` sur session verrouillée rend le fond d'écran, sans rien dire
+## `screencapture` on a locked session renders the wallpaper, without a word
 
-`screencapture -x shot.png` **réussit** (exit 0, PNG de 7,7 Mo, aucun message) écran verrouillé.
-Le fichier ne contient que le papier peint : ni fenêtres, ni **barre de menus** — l'absence de
-barre de menus est le seul signe. Ça se lit comme "écran vide" ou "app sans fenêtre".
-- **Ne pas conclure "permission manquante"** : réflexe faux ici. Distinguer en une commande —
-  `swift -e 'import CoreGraphics; print(CGPreflightScreenCaptureAccess())'` (lecture seule).
-  Verrou : `ioreg -n Root -d1 -a | grep -A1 CGSSessionScreenIsLocked`.
-- La permission se donne à l'**app hôte du terminal** (remonter `ps -o ppid=,comm=`), pas à
-  `claude` ni `screencapture`.
-- Corollaire pilotage depuis le téléphone : le Mac est verrouillé la plupart du temps → **aucune
-  capture possible sans déverrouillage**.
+`screencapture -x shot.png` **succeeds** (exit 0, 7.7 MB PNG, no message) with the screen locked.
+The file contains only the wallpaper: no windows, no **menu bar** — the missing menu bar is
+the only sign. It reads like "empty screen" or "app without a window".
+- **Do not conclude "missing permission"**: that reflex is wrong here. Tell them apart in one
+  command — `swift -e 'import CoreGraphics; print(CGPreflightScreenCaptureAccess())'` (read-only).
+  Lock: `ioreg -n Root -d1 -a | grep -A1 CGSSessionScreenIsLocked`.
+- The permission is granted to the terminal's **host app** (walk up `ps -o ppid=,comm=`), not
+  to `claude` or `screencapture`.
+- Corollary when driving from the phone: the Mac is locked most of the time → **no capture
+  possible without unlocking**.
 
-## Ne pas ouvrir de fenêtre pour vérifier — rendre ≠ afficher
+## Do not open a window to check — rendering ≠ displaying
 
-macOS n'a **aucune API publique** pour ouvrir une fenêtre sur un Space choisi.
-`NSWindow.collectionBehavior` ne sait que "sur tous les bureaux" ou "suis-moi", jamais "bureau 3".
-Y arriver demande SkyLight/CGS privé + SIP désactivé (c'est pourquoi yabai s'injecte dans le Dock).
-Donc **une fenêtre ouverte par un agent atterrit sur le bureau où Marius travaille** et lui coupe
-son travail. La règle dure est dans `~/.claude/CLAUDE.md` ("Aucune fenêtre pour tester") ; voici le
-**comment** obtenir des pixels sans afficher :
-- **Qt/QML** : `QQuickWindow::grabWindow()` sur une fenêtre **créée et jamais montrée** renvoie une
-  image complète (mesuré video-code : 2880×1800 non nulle). Le scene graph dessine, le compositeur
-  n'est pas sollicité. `QQuickRenderControl` est la voie documentée si le chemin court lâche.
-  Piège : `visible:` **et** `visibility:` sur un `ApplicationWindow` est un conflit tranché dans un
-  ordre non spécifié — dire la visibilité avec `visibility:` seul.
-- **AppKit** : rendre la vue dans un bitmap (`bitmapImageRepForCachingDisplay` /
-  `cacheDisplay(in:)`) sans `makeKeyAndOrderFront`.
-- Si aucun chemin sans fenêtre n'existe pour ce qu'il faut voir : **le dire et demander**.
+macOS has **no public API** to open a window on a chosen Space.
+`NSWindow.collectionBehavior` only knows "on every desktop" or "follow me", never "desktop 3".
+Getting there takes private SkyLight/CGS + SIP disabled (which is why yabai injects itself into the Dock).
+So **a window opened by an agent lands on the desktop where Marius is working** and interrupts
+his work. The hard rule is in `~/.claude/CLAUDE.md` (the "no window for testing" rule); here is
+**how** to get pixels without displaying:
+- **Qt/QML**: `QQuickWindow::grabWindow()` on a window **created and never shown** returns a
+  complete image (measured on video-code: 2880×1800, non-blank). The scene graph draws, the
+  compositor is never involved. `QQuickRenderControl` is the documented route if the shortcut fails.
+  Trap: `visible:` **and** `visibility:` on an `ApplicationWindow` is a conflict resolved in an
+  unspecified order — state visibility with `visibility:` alone.
+- **AppKit**: render the view into a bitmap (`bitmapImageRepForCachingDisplay` /
+  `cacheDisplay(in:)`) without `makeKeyAndOrderFront`.
+- If no windowless path exists for what needs to be seen: **say so and ask**.

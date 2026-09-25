@@ -1,18 +1,18 @@
-// Ces encarts n'ont aucun attribut distinctif : seul leur texte les identifie,
-// donc CSS ne suffit pas.
+// These cards have no distinguishing attribute: only their text identifies them,
+// so CSS isn't enough.
 const JUNK = /membership|content label|explore more topics/i;
 const BLOCKS = "ytd-rich-section-renderer, ytd-statement-banner-renderer";
 
 const kill = (b) => {
-  // le titre de l'étagère s'il est non vide, sinon tout le texte (bannière)
+  // the shelf title if non-empty, otherwise the whole text (banner)
   const title = b.querySelector("#title, h2")?.textContent;
   if (JUNK.test(title || b.textContent))
     (b.closest("ytd-rich-section-renderer") ?? b).remove();
 };
 
-// Synchrone dans le callback (microtâche) et limité au sous-arbre inséré :
-// l'encart part avant le premier layout. Un rAF le laissait peindre, prendre
-// sa hauteur, puis disparaître — d'où le saut de scroll.
+// Synchronous in the callback (microtask) and limited to the inserted subtree:
+// the card is gone before the first layout. A rAF let it paint, take its
+// height, then vanish — hence the scroll jump.
 new MutationObserver((records) => {
   for (const r of records)
     for (const n of r.addedNodes) {
