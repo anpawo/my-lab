@@ -8,7 +8,7 @@ in most-recently-used order, with its own title and a picture of itself.
 
 Hold ⌥ and press Tab. Let ⌥ go and you are there. That is the whole product.
 
-![The panel: thirteen windows, six to a row, the selected one lit](docs/panel.png)
+![The panel: six invented windows in a row, the selected one lit](docs/panel.png)
 
 **⌥Tab by default, and not ⌘Tab, on purpose.** The Dock consumes ⌘Tab before any application
 sees it, so holding that chord means switching Apple's switcher off — and that setting outlives
@@ -126,11 +126,13 @@ matters when the screen belongs to someone in the middle of something else.
 alt-tab --render                          # the window list, then where every tile landed
 alt-tab --render --windows=14             # the same, with the list padded out to 14 tiles
 alt-tab --render --shot=docs/panel.png    # the panel as a PNG, pictures and all
+alt-tab --render --demo --shot=docs/panel.png   # the same, with invented windows
 ```
 
-Both build the real panel and run the real layout; neither orders the window in. The picture
-above was made with the third, and can be remade with it — the windows in it are whatever was
-open at the time.
+All of them build the real panel and run the real layout; none orders the window in. Without
+`--demo` the windows in the picture are whatever is open at the time, which is someone's work;
+`--demo` swaps them for apps everyone has, titles that belong to no one and hand-drawn
+pictures. The picture above was made with it.
 
 ## What it does not do
 
