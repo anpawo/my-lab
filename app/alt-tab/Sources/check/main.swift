@@ -1,0 +1,288 @@
+import ApplicationServices
+import SwitchCore
+
+// A test harness in twenty lines, because the alternative on this machine is a framework that
+// exits 0 without running anything.
+private var failures = 0
+private var checks = 0
+
+private func expect(_ condition: Bool, _ what: String, line: UInt = #line) {
+    checks += 1
+    guard !condition else { return }
+    failures += 1
+    print("  ✗ \(what)  (line \(line))")
+}
+
+private func scenario(_ name: String, _ body: () -> Void) {
+    let before = failures
+    body()
+    print("\(failures == before ? "ok  " : "FAIL") \(name)")
+}
+
+private func windows(_ n: Int) -> [WindowInfo] {
+    (0..<n).map {
+        WindowInfo(id: CGWindowID($0 + 1), pid: 100, appName: "App\($0)", title: "Window \($0)",
+                   element: nil, size: CGSize(width: 800, height: 500))
+    }
+}
+
+// Assertions are behavioural, never positional. `index == 1` passes for a switcher that always
+// lands on the same row no matter which window you were on, which is a broken switcher.
+
+scenario("opening lands somewhere other than the window already in front") {
+    let list = windows(3)
+    var state = SwitcherState()
+    guard case let .show(_, index)? = state.handle(.next, windows: list) else {
+        return expect(false, "opening produced no panel")
+    }
+    // Mutation target 1: `.next` on idle 1 → 0.
+    expect(list[index].id != list[0].id, "opened on the front window")
+}
+
+scenario("a second step moves on again") {
+    let list = windows(3)
+    var state = SwitcherState()
+    guard case let .show(_, first)? = state.handle(.next, windows: list),
+          case let .move(second)? = state.handle(.next, windows: list) else {
+        return expect(false, "no movement")
+    }
+    expect(list[second].id != list[first].id, "selection did not move")
+}
+
+scenario("stepping past the end comes back to the start") {
+    let list = windows(3)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)
+    _ = state.handle(.next, windows: list)
+    guard case let .move(index)? = state.handle(.next, windows: list) else {
+        return expect(false, "no movement")
+    }
+    // Mutation target 2: (i+1) % n → min(i+1, n-1) leaves this stuck on the last row.
+    expect(list[index].id == list[0].id, "did not wrap around")
+}
+
+scenario("stepping back from the start wraps to the end") {
+    let list = windows(3)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)          // index 1
+    guard case let .move(back)? = state.handle(.previous, windows: list),
+          case let .move(wrapped)? = state.handle(.previous, windows: list) else {
+        return expect(false, "no movement")
+    }
+    expect(list[back].id == list[0].id, "did not step back")
+    expect(list[wrapped].id == list[2].id, "did not wrap to the end")
+    var closed = SwitcherState()
+    expect(closed.handle(.previous, windows: list) == nil, "previous opened the panel")
+}
+
+scenario("a row down lands a row down, and clamps on the short last row") {
+    let list = windows(15)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)          // index 1
+    guard case let .move(down)? = state.handle(.jump(6), windows: list) else {
+        return expect(false, "no movement")
+    }
+    expect(list[down].id == list[7].id, "did not move a row down")
+    guard case let .move(last)? = state.handle(.jump(6), windows: list) else {
+        return expect(false, "no movement")
+    }
+    expect(list[last].id == list[13].id, "did not move on to the last row")
+    // Mutation target: a wrap here sends the bottom row back to the top instead of holding
+    // still, and a bare clamp slides it sideways to the last tile.
+    expect(state.handle(.jump(6), windows: list) == nil, "moved off the last row")
+    guard case let .move(up)? = state.handle(.jump(-6), windows: list) else {
+        return expect(false, "no movement")
+    }
+    expect(list[up].id == list[7].id, "did not move a row back up")
+    expect(state.handle(.jump(-6), windows: list) != nil, "the middle row would not go up")
+    expect(state.handle(.jump(-6), windows: list) == nil, "moved above the first row")
+    var closed = SwitcherState()
+    expect(closed.handle(.jump(6), windows: list) == nil, "a row down opened the panel")
+}
+
+scenario("a single window is still selectable") {
+    var state = SwitcherState()
+    guard case let .show(_, index)? = state.handle(.next, windows: windows(1)) else {
+        return expect(false, "opening produced no panel")
+    }
+    expect(index == 0, "single window not selected")
+}
+
+scenario("with nothing open there is nothing to switch to") {
+    var state = SwitcherState()
+    expect(state.handle(.next, windows: []) == nil, "opened on an empty list")
+    expect(state.isOpen == false, "left itself open")
+}
+
+scenario("committing raises the window that was selected") {
+    let list = windows(3)
+    var state = SwitcherState()
+    guard case let .show(_, index)? = state.handle(.next, windows: list),
+          case let .raise(window)? = state.handle(.commit, windows: list) else {
+        return expect(false, "commit did not raise")
+    }
+    expect(window.id == list[index].id, "raised the wrong window")
+    expect(state.isOpen == false, "stayed open after committing")
+}
+
+scenario("clicking a tile raises that window, not the one under the keyboard") {
+    let list = windows(3)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)
+    guard case let .raise(window)? = state.handle(.pick(list[2].id), windows: list) else {
+        return expect(false, "a click raised nothing")
+    }
+    expect(window.id == list[2].id, "raised the selection instead of the tile clicked")
+    expect(state.isOpen == false, "stayed open after a click")
+}
+
+scenario("a click on a window that is already gone raises nothing") {
+    let list = windows(3)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)
+    expect(state.handle(.pick(list[2].id), windows: [list[0]]) == nil, "raised a window that had gone")
+}
+
+scenario("cancelling never raises anything") {
+    let list = windows(3)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)
+    // Mutation target 4: `.cancel` emitting `.raise` turns Escape into a switch.
+    expect(state.handle(.cancel, windows: list) == .hide, "cancel did not simply hide")
+    expect(state.isOpen == false, "stayed open after cancelling")
+}
+
+scenario("a modifier released with nothing open does nothing at all") {
+    // Every ⌥ press in ordinary typing arrives here.
+    var state = SwitcherState()
+    expect(state.handle(.commit, windows: windows(3)) == nil, "commit acted while closed")
+    expect(state.handle(.cancel, windows: windows(3)) == nil, "cancel acted while closed")
+}
+
+scenario("a window that vanished between opening and committing is not raised") {
+    let list = windows(3)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)
+    // Selection is held as a window id, so a list that lost that window resolves to nothing
+    // rather than raising whoever now occupies the index.
+    expect(state.handle(.commit, windows: [list[0]]) == .hide, "raised a stale index")
+}
+
+scenario("only standard windows are offered, and absent ones despite their subrole") {
+    func offered(_ subrole: String?, minimized: Bool = false, appHidden: Bool = false) -> Bool {
+        Filter.isSwitchable(subrole: subrole, isMinimized: minimized, isAppHidden: appHidden)
+    }
+    expect(offered(kAXStandardWindowSubrole), "rejected a standard window")
+    expect(!offered(kAXDialogSubrole), "accepted a dialog")
+    expect(!offered(nil), "accepted a window with no subrole")
+    // Leaving the screen rewrites the subrole to AXDialog, so this is the only way a window in
+    // the Dock or behind a hidden app is ever seen. Mutation target: refusing it makes both
+    // kinds unreachable, which is how they were missing in the first place.
+    expect(offered(kAXDialogSubrole, minimized: true), "rejected a minimized window")
+    expect(offered(kAXDialogSubrole, appHidden: true), "rejected a hidden app's window")
+    expect(offered(kAXStandardWindowSubrole, minimized: true), "rejected a minimized standard window")
+    expect(!offered(nil, minimized: true), "accepted a minimized non-window")
+}
+
+scenario("our own panel is never in our own list") {
+    // Mutation target 3: dropping this puts the activating panel at index 0 and shifts every
+    // entry by one, which quietly defeats the whole product.
+    expect(!Filter.isForeign(ownerPID: 42, selfPID: 42), "kept our own window")
+    expect(Filter.isForeign(ownerPID: 43, selfPID: 42), "dropped somebody else's window")
+}
+
+private let tab: UInt16 = 48
+private let escape: UInt16 = 53
+private let backtick: UInt16 = 50
+
+scenario("the modifier that commits is never shift") {
+    // Shift is how you say "the other way", so a chord holding it would commit the moment you
+    // reversed direction.
+    expect(Shortcut(keyCode: tab, modifiers: [.option, .shift]).holdModifier == .option,
+           "shift won over option")
+    expect(Shortcut(keyCode: tab, modifiers: [.command, .shift]).holdModifier == .command,
+           "shift won over command")
+    expect(Shortcut(keyCode: tab, modifiers: .shift).holdModifier == nil,
+           "shift alone was accepted as holdable")
+}
+
+scenario("a chord with nothing to hold is refused") {
+    // Not a nicety: these are global hotkeys, so a bare key would be taken from every app.
+    expect(!Shortcut(keyCode: tab, modifiers: []).isValid, "bare Tab was accepted")
+    expect(!Shortcut(keyCode: tab, modifiers: .shift).isValid, "⇧Tab was accepted")
+    expect(Shortcut(keyCode: tab, modifiers: .option).isValid, "⌥Tab was refused")
+    expect(Shortcut(keyCode: escape, modifiers: .control).isValid, "⌃Esc was refused")
+}
+
+scenario("the chords macOS keeps for itself name what has to be switched off") {
+    // Registering one of these succeeds and then never fires, unless the system's own is off
+    // first — so the list of ids is the difference between a working chord and a silent one.
+    expect(Shortcut(keyCode: tab, modifiers: .command).systemChords == [1, 2], "⌘Tab misread")
+    // The reverse goes with it: leaving 2 alive puts Apple's switcher back on the screen the
+    // moment shift joins the chord that was just rebound.
+    expect(Shortcut(keyCode: tab, modifiers: [.command, .shift]).systemChords == [1, 2], "⌘⇧Tab misread")
+    expect(Shortcut(keyCode: backtick, modifiers: .command).systemChords == [6], "⌘` misread")
+    expect(Shortcut(keyCode: tab, modifiers: .option).systemChords.isEmpty, "⌥Tab wrongly flagged")
+    expect(Shortcut(keyCode: tab, modifiers: [.command, .option]).systemChords.isEmpty,
+           "⌥⌘Tab wrongly flagged — macOS only claims the plain and shifted forms")
+    expect(Shortcut(keyCode: tab, modifiers: .command).takesOverSystemChord, "⌘Tab not flagged")
+    expect(!Shortcut(keyCode: tab, modifiers: .option).takesOverSystemChord, "⌥Tab wrongly flagged")
+}
+
+scenario("chords are written the way macOS writes them") {
+    expect(Shortcut(keyCode: tab, modifiers: .option).label == "⌥Tab", "⌥Tab mislabelled")
+    // Apple's canonical order is ⌃⌥⇧⌘, whatever order they were pressed in.
+    expect(Shortcut(keyCode: tab, modifiers: [.shift, .option]).label == "⌥⇧Tab", "⌥⇧Tab mislabelled")
+    expect(Shortcut(keyCode: escape, modifiers: .option).label == "⌥Esc", "⌥Esc mislabelled")
+    expect(Shortcut(keyCode: 12, modifiers: [.command, .control]).label == "⌃⌘Q", "⌃⌘Q mislabelled")
+}
+
+scenario("there is one binding, and its default is ⌥Tab") {
+    expect(Binding.allCases.count == 1, "a binding came back")
+    expect(Binding.next.fallback.label == "⌥Tab", "the default changed")
+    // A default that took a system chord would switch Apple's switcher off on first launch,
+    // for someone who asked for nothing.
+    expect(Binding.allCases.allSatisfy { $0.fallback.isValid && !$0.fallback.takesOverSystemChord },
+           "a default is unusable")
+}
+
+scenario("a list that changed keeps the selection it still has") {
+    let list = windows(4)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)          // index 1
+    _ = state.handle(.next, windows: list)          // index 2
+    // The first window closes; the selection is a window, not a place, so it must not move.
+    let shorter = Array(list.dropFirst())
+    guard case let .show(_, index)? = state.refresh(shorter) else {
+        return expect(false, "refresh produced nothing")
+    }
+    expect(shorter[index].id == list[2].id, "the selection moved to another window")
+}
+
+scenario("closing the selected window hands its place to the next") {
+    let list = windows(4)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)          // index 1
+    let shorter = list.filter { $0.id != list[1].id }
+    guard case let .show(_, index)? = state.refresh(shorter) else {
+        return expect(false, "refresh produced nothing")
+    }
+    // Its place, not the start — closing several in a row should walk the list.
+    expect(index == 1, "the selection went back to the beginning")
+}
+
+scenario("closing the last window closes the panel") {
+    let list = windows(1)
+    var state = SwitcherState()
+    _ = state.handle(.next, windows: list)
+    expect(state.refresh([]) == .hide, "an empty list left the panel up")
+    expect(state.isOpen == false, "stayed open with nothing to show")
+}
+
+scenario("a list changing while nothing is open does nothing") {
+    var state = SwitcherState()
+    expect(state.refresh(windows(3)) == nil, "refresh acted while closed")
+}
+
+print("\n\(checks) checks, \(failures) failed")
+exit(failures == 0 ? 0 : 1)
