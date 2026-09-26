@@ -205,7 +205,11 @@ private final class OverlayView: NSView {
         var text: String?
         switch target {
         case .screen:
-            if session.hoverScreen == screen { cut = bounds; text = pixels(screen.frame) }
+            // Below the notch strip, or the display's own rounded corners eat the frame's.
+            if session.hoverScreen == screen {
+                cut = CGRect(x: 0, y: 0, width: bounds.width, height: bounds.height - screen.safeAreaInsets.top)
+                text = pixels(screen.frame)
+            }
         case .window:
             if let w = session.hoverWindow { cut = local(w.frame); text = "\(w.app)  \(pixels(w.frame))" }
         case .area:
