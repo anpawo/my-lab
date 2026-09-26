@@ -72,7 +72,8 @@ final class Thumbnail: NSPanel {
             }
         }
 
-        setFrameOrigin(CGPoint(x: v.maxX - frame.width - 16, y: v.maxY - frame.height - 16))
+        // Under the pinned cards, if any.
+        setFrameOrigin(CGPoint(x: v.maxX - frame.width - 16, y: Pin.stackBottom(on: NSScreen.underMouse) - frame.height - 16))
         orderFrontRegardless()
         arm()
     }
@@ -113,7 +114,7 @@ final class Thumbnail: NSPanel {
     }
 
     @objc private func pin() {
-        if case .image(let img, _, let rect) = content { Pin.show(img, at: rect) }
+        if case .image(let img, let url, _) = content { Pin.show(img, url: url) }
         dismiss()
     }
 
