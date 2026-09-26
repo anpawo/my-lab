@@ -229,7 +229,7 @@ private final class OverlayView: NSView {
             // The selection: a black dotted line, white handles with a gray core.
             frameLayer.lineWidth = rounded ? 2 : 1
             frameLayer.strokeColor = (rounded ? NSColor.white : NSColor.black).cgColor
-            frameLayer.lineDashPattern = rounded ? nil : [6, 6]
+            frameLayer.lineDashPattern = rounded ? nil : [4, 4]
             frameLayer.path = target == .screen ? screenFrame(cut.insetBy(dx: 1, dy: 1))
                 : rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
                 : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
