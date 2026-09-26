@@ -10,3 +10,5 @@ dist/
 *.p12
 .env
 CLAUDE.md
+__pycache__/
+*.pyc
