@@ -22,9 +22,15 @@ final class Thumbnail: NSPanel {
 
     private init(_ content: Content) {
         self.content = content
-        let width: CGFloat = 220
-        var height: CGFloat = 140
-        if case .image(let img, _, _) = content { height = min(220, width * CGFloat(img.height) / CGFloat(img.width)) }
+        // A tenth of the screen wide, the capture's own aspect ratio, top-right corner.
+        let v = NSScreen.underMouse.visibleFrame
+        let width = (v.width / 10).rounded()
+        var height = (width * 0.625).rounded()
+        switch content {
+        case .image(let img, _, _), .movie(.some(let img), _):
+            height = (width * CGFloat(img.height) / CGFloat(img.width)).rounded()
+        default: break
+        }
         super.init(contentRect: CGRect(x: 0, y: 0, width: width, height: height),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = .floating
@@ -60,8 +66,7 @@ final class Thumbnail: NSPanel {
             view.addSubview(buttons)
         }
 
-        let v = NSScreen.underMouse.visibleFrame
-        setFrameOrigin(CGPoint(x: v.maxX - frame.width - 16, y: v.minY + 16))
+        setFrameOrigin(CGPoint(x: v.maxX - frame.width - 16, y: v.maxY - frame.height - 16))
         orderFrontRegardless()
         arm()
     }
