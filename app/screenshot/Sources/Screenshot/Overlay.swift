@@ -219,7 +219,7 @@ private final class OverlayView: NSView {
         case .screen:
             if session.hoverScreen == screen { cut = bounds; text = pixels(screen.frame) }
         case .window:
-            if let w = session.hoverWindow { text = w.title.isEmpty ? w.app : "\(w.app) — \(w.title)" }
+            if let w = session.hoverWindow { text = w.app }
         case .area:
             if let sel = session.selection, screen.frame.contains(sel) { cut = local(sel); text = pixels(sel) }
         }
