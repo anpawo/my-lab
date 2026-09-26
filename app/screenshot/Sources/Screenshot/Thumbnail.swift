@@ -15,6 +15,7 @@ final class Thumbnail: NSPanel {
     private let buttons = NSStackView()
 
     static func show(_ content: Content) {
+        guard Settings.thumbnail else { return }
         current?.orderOut(nil)
         current = Thumbnail(content)
     }

@@ -17,11 +17,12 @@ enum Output {
     @MainActor
     static func save(_ image: CGImage, scale: CGFloat, kind: String = "Screenshot", app: String? = nil) throws -> URL {
         guard let png = png(image, scale: scale) else { throw CocoaError(.fileWriteUnknown) }
-        let url = Settings.folder.appendingPathComponent(fileName(kind: kind, app: app, ext: "png"))
-        try FileManager.default.createDirectory(at: Settings.folder, withIntermediateDirectories: true)
+        let folder = Settings.saves ? Settings.folder : Settings.history
+        let url = folder.appendingPathComponent(fileName(kind: kind, app: app, ext: "png"))
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         try png.write(to: url)
-        copy(png, url: url)
-        remember(url)
+        if Settings.copies { copy(png, url: url) }
+        if Settings.saves { remember(url) } else { prune() }
         return url
     }
 
@@ -40,7 +41,11 @@ enum Output {
         let fm = FileManager.default
         try? fm.createDirectory(at: Settings.history, withIntermediateDirectories: true)
         try? fm.copyItem(at: url, to: Settings.history.appendingPathComponent(url.lastPathComponent))
-        for old in recent().dropFirst(Settings.historySize) { try? fm.removeItem(at: old) }
+        prune()
+    }
+
+    static func prune() {
+        for old in recent().dropFirst(Settings.historySize) { try? FileManager.default.removeItem(at: old) }
     }
 
     static func recent() -> [URL] {

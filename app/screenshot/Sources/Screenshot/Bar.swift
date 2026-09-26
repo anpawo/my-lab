@@ -146,37 +146,59 @@ final class Bar: NSPanel {
         menu.popUp(positioning: nil, at: CGPoint(x: 0, y: options.bounds.height + 6), in: options)
     }
 
+    /// The system's three sections, filled with what this app actually does.
     private func optionsMenu() -> NSMenu {
         let menu = NSMenu()
-        menu.addItem(withTitle: "Options", action: nil, keyEquivalent: "")   // pull-down title
-        let folder = menu.addItem(withTitle: "Enregistrer dans : \(Settings.folder.lastPathComponent)…",
-                                  action: #selector(pickFolder), keyEquivalent: "")
-        folder.target = self
-        menu.addItem(.separator())
-        for (title, secs) in [("Sans minuteur", 0), ("Minuteur 5 s", 5), ("Minuteur 10 s", 10)] {
-            let m = menu.addItem(withTitle: title, action: #selector(setTimer(_:)), keyEquivalent: "")
+        func header(_ t: String) { menu.addItem(withTitle: t, action: nil, keyEquivalent: "") }
+        func item(_ t: String, _ sel: Selector, on: Bool, tag: Int = 0) {
+            let m = menu.addItem(withTitle: t, action: sel, keyEquivalent: "")
             m.target = self
-            m.tag = secs
-            m.state = Settings.timer == secs ? .on : .off
+            m.state = on ? .on : .off
+            m.tag = tag
+            m.indentationLevel = 1
+        }
+        header("Enregistrer dans")
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        for (name, dir) in [("Bureau", home.appendingPathComponent("Desktop")),
+                            ("Téléchargements", home.appendingPathComponent("Downloads")),
+                            ("Documents", home.appendingPathComponent("Documents"))] {
+            item(name, #selector(setFolder(_:)), on: Settings.saves && Settings.folder.path == dir.path)
+            menu.items.last!.representedObject = dir
+        }
+        let custom = ![home.appendingPathComponent("Desktop"), home.appendingPathComponent("Downloads"),
+                       home.appendingPathComponent("Documents")].map(\.path).contains(Settings.folder.path)
+        if custom { item(Settings.folder.lastPathComponent, #selector(setFolder(_:)), on: Settings.saves)
+                    menu.items.last!.representedObject = Settings.folder }
+        item("Presse-papiers seulement", #selector(clipboardOnly), on: !Settings.saves)
+        item("Autre dossier…", #selector(pickFolder), on: false)
+        menu.addItem(.separator())
+        header("Minuteur")
+        for (t, secs) in [("Aucun", 0), ("5 secondes", 5), ("10 secondes", 10)] {
+            item(t, #selector(setTimer(_:)), on: Settings.timer == secs, tag: secs)
         }
         menu.addItem(.separator())
-        let cursor = menu.addItem(withTitle: "Afficher le pointeur", action: #selector(toggleCursor), keyEquivalent: "")
-        cursor.target = self
-        cursor.state = Settings.cursor ? .on : .off
-        if session.state.kind == .video {
-            let mic = menu.addItem(withTitle: "Micro", action: #selector(toggleMic), keyEquivalent: "")
-            mic.target = self
-            mic.state = Settings.microphone ? .on : .off
-        }
+        header("Options")
+        item("Afficher la vignette", #selector(toggleThumbnail), on: Settings.thumbnail)
+        item("Copier dans le presse-papiers", #selector(toggleCopy), on: Settings.copies)
+        item("Afficher le pointeur", #selector(toggleCursor), on: Settings.cursor)
+        if session.state.kind == .video { item("Enregistrer le micro", #selector(toggleMic), on: Settings.microphone) }
         return menu
     }
+
+    @objc private func setFolder(_ item: NSMenuItem) {
+        Settings.folder = item.representedObject as! URL
+        Settings.saves = true
+    }
+    @objc private func clipboardOnly() { Settings.saves = false; Settings.copies = true }
+    @objc private func toggleThumbnail() { Settings.thumbnail.toggle() }
+    @objc private func toggleCopy() { Settings.copies.toggle() }
 
     @objc private func pick(_ b: ModeButton) { session.state = b.mode; session.refresh() }
     @objc private func cancel() { session.close() }
     @objc private func commit() { session.commit() }
-    @objc private func setTimer(_ item: NSMenuItem) { Settings.timer = item.tag; refresh() }
-    @objc private func toggleCursor() { Settings.cursor.toggle(); refresh() }
-    @objc private func toggleMic() { Settings.microphone.toggle(); refresh() }
+    @objc private func setTimer(_ item: NSMenuItem) { Settings.timer = item.tag }
+    @objc private func toggleCursor() { Settings.cursor.toggle() }
+    @objc private func toggleMic() { Settings.microphone.toggle() }
 
     @objc private func pickFolder() {
         let panel = NSOpenPanel()
@@ -185,8 +207,7 @@ final class Bar: NSPanel {
         panel.directoryURL = Settings.folder
         panel.level = level
         NSApp.activate()
-        if panel.runModal() == .OK, let url = panel.url { Settings.folder = url }
-        refresh()
+        if panel.runModal() == .OK, let url = panel.url { Settings.folder = url; Settings.saves = true }
     }
 }
 
