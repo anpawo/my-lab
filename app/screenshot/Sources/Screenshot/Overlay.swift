@@ -38,8 +38,8 @@ private final class OverlayView: NSView {
     private enum Drag { case none, new(CGPoint), move(CGPoint), resize(Int) }
     private var drag = Drag.none
 
-    // Everything on screen is a layer, so a hover costs a mask path and a fade is Core
-    // Animation's: redrawing a 2940×1912 image on every mouse move is what lagged.
+    // Everything on screen is a layer, so a hover costs a mask path: redrawing a 2940×1912
+    // image on every mouse move is what lagged.
     private let veil = CALayer()
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
@@ -181,20 +181,23 @@ private final class OverlayView: NSView {
     /// Called by the session after any hover or state change.
     func update() {
         let target = session.state.target
-        let hovered = target == .screen && session.hoverScreen == screen
+        // Screen and window look alike: no veil, a white frame on what the click would take.
+        // The area keeps its veil, since the picture is the part that shows through it.
         var cut: CGRect?
         var text: String?
-        var rounded = false
         switch target {
-        case .screen: break
+        case .screen:
+            if session.hoverScreen == screen { cut = bounds; text = pixels(screen.frame) }
         case .window:
-            if let w = session.hoverWindow { cut = local(w.frame); text = "\(w.app)  \(pixels(w.frame))"; rounded = true }
+            if let w = session.hoverWindow { cut = local(w.frame); text = "\(w.app)  \(pixels(w.frame))" }
         case .area:
             if let sel = session.selection, screen.frame.contains(sel) { cut = local(sel); text = pixels(sel) }
         }
+        let rounded = target != .area
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
+        veil.opacity = target == .area ? 0.45 : 0
         let path = CGMutablePath()
         path.addRect(bounds)
         if let cut { path.addRect(cut) }
@@ -213,6 +216,7 @@ private final class OverlayView: NSView {
             var box = CGRect(x: cut.minX, y: cut.minY - size.height - 10, width: size.width + 12, height: size.height + 6)
             if box.minY < 0 { box.origin.y = cut.minY + 4 }
             if box.maxX > bounds.maxX { box.origin.x = bounds.maxX - box.width }
+            if target == .screen { box.origin = CGPoint(x: bounds.midX - box.width / 2, y: bounds.maxY - box.height - 40) }
             labelBack.frame = box
             label.frame = box.insetBy(dx: 0, dy: 3)
         } else {
@@ -221,12 +225,6 @@ private final class OverlayView: NSView {
             labelBack.frame = .zero
             label.frame = .zero
         }
-        CATransaction.commit()
-
-        // The one thing that animates: the veil of the screen a click would take.
-        CATransaction.begin()
-        CATransaction.setAnimationDuration(0.2)
-        veil.opacity = hovered ? 0.08 : 0.45
         CATransaction.commit()
     }
 
