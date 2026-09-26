@@ -5,6 +5,7 @@ import AppKit
 final class Pin: NSPanel, NSMenuDelegate {
     private static var pins: [Pin] = []
     private let url: URL
+    private let screenOf: NSScreen
 
     static func show(_ image: CGImage, url: URL) {
         pins.append(Pin(image, url: url))
@@ -12,12 +13,22 @@ final class Pin: NSPanel, NSMenuDelegate {
 
     /// Where the stack ends on this screen: the next card goes below it.
     static func stackBottom(on screen: NSScreen) -> CGFloat {
-        pins.filter { $0.screen == screen }.map(\.frame.minY).min() ?? screen.visibleFrame.maxY
+        pins.filter { $0.screenOf == screen }.map(\.frame.minY).min() ?? screen.visibleFrame.maxY
+    }
+
+    /// Re-stacks a screen's pins from the top, so closing one lets the others move up.
+    private static func restack(on screen: NSScreen) {
+        var y = screen.visibleFrame.maxY
+        for p in pins where p.screenOf == screen {
+            y -= p.frame.height + 16
+            p.setFrameOrigin(CGPoint(x: p.frame.minX, y: y))
+        }
     }
 
     private init(_ image: CGImage, url: URL) {
         self.url = url
         let s = NSScreen.underMouse
+        screenOf = s
         let width = (s.visibleFrame.width / 10).rounded()
         let height = (width * CGFloat(image.height) / CGFloat(image.width)).rounded()
         super.init(contentRect: CGRect(x: 0, y: 0, width: width, height: height),
@@ -60,6 +71,7 @@ final class Pin: NSPanel, NSMenuDelegate {
     @objc func dismiss() {
         orderOut(nil)
         Pin.pins.removeAll { $0 === self }
+        Pin.restack(on: screenOf)
     }
 
     private final class PinView: NSView {
