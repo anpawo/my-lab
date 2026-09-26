@@ -43,6 +43,7 @@ private final class OverlayView: NSView {
     private let veil = CALayer()
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
+    private let frameBase = CAShapeLayer()   // white under the black dashes: no gaps, two colours
     private let handlesLayer = CAShapeLayer()
     private let handleDots = CAShapeLayer()
     private let labelBack = CALayer()
@@ -63,6 +64,9 @@ private final class OverlayView: NSView {
         hole.fillRule = .evenOdd
         hole.fillColor = NSColor.black.cgColor
         veil.mask = hole
+        frameBase.fillColor = nil
+        frameBase.strokeColor = NSColor.white.cgColor
+        frameBase.lineWidth = 1
         frameLayer.fillColor = nil
         frameLayer.strokeColor = NSColor.white.cgColor
         handlesLayer.fillColor = NSColor.white.cgColor
@@ -74,7 +78,7 @@ private final class OverlayView: NSView {
         label.foregroundColor = NSColor.white.cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
-        for l in [veil, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
+        for l in [veil, frameBase, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -229,6 +233,7 @@ private final class OverlayView: NSView {
             frameLayer.path = target == .screen ? screenFrame(cut.insetBy(dx: 1, dy: 1))
                 : rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
                 : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
+            frameBase.path = rounded ? nil : frameLayer.path
             let handles = CGMutablePath(), dots = CGMutablePath()
             if target == .area {
                 for i in 0..<8 {
@@ -249,6 +254,7 @@ private final class OverlayView: NSView {
             label.frame = box.insetBy(dx: 0, dy: 3)
         } else {
             frameLayer.path = nil
+            frameBase.path = nil
             handlesLayer.path = nil
             handleDots.path = nil
             labelBack.frame = .zero
