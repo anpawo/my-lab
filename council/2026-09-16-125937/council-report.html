@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Council Verdict: 2026-09-16</title>
+<style>
+ :root {
+ --paper: #fafaf7;
+ --ink: #141413;
+ --ink-soft: #4b4b47;
+ --ink-mute: #8a8a83;
+ --rule: #e5e3dc;
+ --accent: #1e3a5f;
+ --accent-soft: #e8eef5;
+ --sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ --serif: "Iowan Old Style", "Iowan", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+ --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+ }
+ * { box-sizing: border-box; }
+ html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+ body { font-family: var(--serif); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+ .wrap { max-width: 780px; margin: 0 auto; padding: 64px 32px 96px; }
+
+ .eyebrow {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ color: var(--accent);
+ font-weight: 600;
+ margin: 0 0 16px;
+ }
+ h1.question {
+ font-family: var(--serif);
+ font-weight: 500;
+ font-size: 34px;
+ line-height: 1.25;
+ letter-spacing: -0.01em;
+ margin: 0 0 20px;
+ color: var(--ink);
+ }
+ .meta {
+ font-family: var(--sans);
+ font-size: 13px;
+ color: var(--ink-mute);
+ margin: 0 0 56px;
+ border-bottom: 1px solid var(--rule);
+ padding-bottom: 28px;
+ }
+
+ section.verdict {
+ background: var(--accent-soft);
+ border-left: 3px solid var(--accent);
+ padding: 36px 40px;
+ margin: 0 0 56px;
+ border-radius: 2px;
+ }
+ section.verdict h2 {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ color: var(--accent);
+ margin: 0 0 24px;
+ font-weight: 600;
+ }
+ section.verdict h3 {
+ font-family: var(--sans);
+ font-size: 14px;
+ font-weight: 600;
+ color: var(--ink);
+ margin: 28px 0 8px;
+ letter-spacing: 0;
+ }
+ section.verdict h3:first-of-type { margin-top: 0; }
+ section.verdict p, section.verdict ul { margin: 0 0 8px; }
+ section.verdict ul { padding-left: 20px; }
+ section.verdict li { margin-bottom: 6px; }
+ section.verdict .recommendation {
+ font-size: 19px;
+ line-height: 1.5;
+ margin-top: 4px;
+ }
+ section.verdict .one-thing {
+ font-family: var(--serif);
+ font-style: italic;
+ font-size: 18px;
+ border-top: 1px solid rgba(30, 58, 95, 0.2);
+ padding-top: 20px;
+ margin-top: 28px;
+ }
+
+ .round-label {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ color: var(--ink-mute);
+ font-weight: 600;
+ margin: 0 0 16px;
+ padding-top: 16px;
+ border-top: 1px solid var(--rule);
+ }
+
+ details {
+ border-bottom: 1px solid var(--rule);
+ padding: 20px 0;
+ }
+ details[open] { padding-bottom: 28px; }
+ summary {
+ cursor: pointer;
+ list-style: none;
+ font-family: var(--sans);
+ font-weight: 500;
+ font-size: 15px;
+ color: var(--ink);
+ display: flex;
+ align-items: baseline;
+ gap: 12px;
+ user-select: none;
+ }
+ summary::-webkit-details-marker { display: none; }
+ summary::before {
+ content: "+";
+ font-family: var(--mono);
+ color: var(--accent);
+ font-weight: 400;
+ font-size: 16px;
+ transition: transform 160ms ease;
+ display: inline-block;
+ width: 12px;
+ }
+ details[open] summary::before { content: "−"; }
+ .advisor-kind {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.16em;
+ text-transform: uppercase;
+ color: var(--ink-mute);
+ margin-left: 4px;
+ }
+ details .body {
+ margin-top: 16px;
+ padding-left: 24px;
+ color: var(--ink-soft);
+ font-size: 16px;
+ line-height: 1.65;
+ }
+ details .body p { margin: 0 0 12px; }
+ details .body p:last-child { margin-bottom: 0; }
+
+ footer {
+ margin-top: 80px;
+ padding-top: 24px;
+ border-top: 1px solid var(--rule);
+ font-family: var(--sans);
+ font-size: 12px;
+ color: var(--ink-mute);
+ line-height: 1.6;
+ }
+ footer code {
+ font-family: var(--mono);
+ background: rgba(30, 58, 95, 0.08);
+ padding: 1px 6px;
+ border-radius: 3px;
+ color: var(--ink);
+ font-size: 11px;
+ }
+
+ @media (max-width: 640px) {
+ .wrap { padding: 40px 20px 64px; }
+ h1.question { font-size: 26px; }
+ section.verdict { padding: 28px 24px; }
+ }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+ <p class="eyebrow">Council Verdict</p>
+ <h1 class="question">Which tool, if any, should fix typos as he types inside Teams and other Chromium apps on macOS, in French and English?</h1>
+ <p class="meta">Wednesday, 16 September 2026, 12:59 &nbsp;·&nbsp; 5 advisors · 5 peer reviewers</p>
+
+ <section class="verdict">
+ <h2>Synthesis</h2>
+
+ <h3>Where the council agrees</h3>
+ <ul><li><strong>Contrarian, First Principles, Outsider, Executor</strong> (4 of 5): the trigger was Teams running an English-only dictionary against French text, not a missing macOS feature. First move is free: add French in Teams (Settings &gt; General &gt; Editor spellcheck &gt; Manage). Every reviewer picked one of these four as strongest.</li><li><strong>Contrarian, First Principles, Expansionist</strong>: "creer" is a dropped accent, not a keystroke slip. Whether any autocorrect set fixes it is unverified.</li><li><strong>Contrarian, First Principles, Outsider, Executor</strong>: mixed FR/EN in one message is exactly where word-list autocorrect fails (chat, pain, coin, sont, a/à, ou/où fire in both languages). A silent replacer that mangles a message to an external partner is worse than a red underline.</li><li><strong>Contrarian, Executor</strong>: any resident keystroke daemon (Typinator, Espanso) fires in Terminal, Claude Code, password fields and under Handy's Cmd+V paste; exclusions become a maintenance chore.</li><li><strong>Executor, Outsider</strong>: Espanso is not "free" on Tahoe: Accessibility loops and per-app clipboard backend tuning cost a Saturday.</li></ul>
+
+ <h3>Where the council clashes</h3>
+ <ul><li><strong>Buy now vs. free checkbox first.</strong> The Expansionist says buy Typinator ($49.99 once) for accent-free French everywhere and a personal dictionary that compounds; the other four say flip the Teams setting and wait. Reasonable because a one-time tool covering Discord and Gmail is cheap if accents really are a daily habit, and wasteful if the pain was one word in one app.</li><li><strong>Does a French autocorrect set even contain "creer → créer"?</strong> The Contrarian says no set targets dropped accents; the Expansionist says the sets are mostly accent restorations. Both are guessing: the research left set contents unverified, and Reviewer 5 points out it is a two-minute grep to settle.</li><li><strong>Escalation path.</strong> The Executor escalates to a Typinator trial after one week; the First Principles Thinker refuses any tool until two weeks of real error samples exist. Either is defensible: a trial is cheap, but without samples nobody knows what the tool should fix.</li></ul>
+
+ <h3>Blind spots the council caught</h3>
+ <ul><li><strong>Fix the input, not the correction</strong> (Reviewers 1, 2, 3, 5 converged). The habit is typing French without accents. Press-and-hold on a vowel works in every Chromium app, a French or ABC-Extended layout makes accents first-class, and Handy already dictates accented French. All three are daemon-free and cost nothing. Checked after the review: the Mac runs the plain U.S. layout with press-and-hold at default, so this is available today.</li><li><strong>Underline and autocorrect are two different toggles</strong> (Reviewer 1). The complaint was wrong-language suggestions. Adding French with autocorrect left off gives correct underlines and zero silent rewrites. Four advisors treated Teams' "Correct words while typing" as risk-free; it is the same silent replacer, driven by multi-language detection reported flaky on Mac in March 2026. Reviewer 3 adds that it is Microsoft Editor, a cloud service, worth checking against his local-first stance.</li><li><strong>The "Chromium ignores macOS" premise was oversold</strong> (Reviewers 2, 4, 5). Chromium and Electron on macOS delegate spellcheck underlines to the native spell checker, whose languages come from System Settings &gt; Keyboard &gt; Text Input &gt; Spelling. Checked after the review: that setting is at its default, automatic by language, with French already listed. So Discord should already underline French correctly, and the Teams failure is Teams' own Editor dictionary, which confirms the Teams-side fix.</li></ul>
+
+ <h3>The recommendation</h3>
+ <p class="recommendation">Buy nothing. Four advisors and all five reviewers agree the pain was a missing French dictionary in Teams, and the system check confirms macOS itself already handles French. Add French to Teams' Editor spellcheck with autocorrect left off, and fix the accent habit at the keyboard (press-and-hold, or Handy for longer French messages). I am overruling the Expansionist: the case for Typinator rests on an unverified claim about what its French set contains and ignores mixed-language collisions. Revisit a tool only if two weeks of real samples show repeated misspellings that a word list could fix, and grep espanso's typofixer-fr for those exact words before spending a cent.</p>
+
+ <p class="one-thing"><strong>Do first:</strong> In Teams, open Settings &gt; General &gt; Editor spellcheck &gt; Manage, add Français, leave "Correct words while typing" off, restart Teams and retype "creer" in a chat to yourself.</p>
+ </section>
+
+ <p class="round-label">Round 1: Advisors</p>
+
+ <details>
+ <summary>The Contrarian <span class="advisor-kind">downside lens</span></summary>
+ <div class="body"><p>The load-bearing assumption nobody is examining: that "creer" flagged in Teams is a <em>typo</em> problem. It is not. "creer" is not a misspelling of "créer" in any French autocorrect dictionary; it is the correct word with the accent dropped, and the actual failure was Teams running an English-only dictionary against French text. Every system-wide autocorrector on the list (Typinator FR 800+, espanso typofixer-fr) targets <em>common misspellings</em>, not "user typed é as e". The very case that triggered this question will not be fixed by the $49.99 tool. He will buy it, type "creer" again, and watch it stay "creer".</p>
+<p>Worse mechanism: mixed FR/EN in the same sentence with two vendor sets "designed to coexist". "Coexist" means the sets don't share trigger strings, not that the tool knows which language he is in. An English set with 800+ entries will contain triggers like "cant", "wont", "dont", "sont"-adjacent tokens; a French set will contain "ou", "a", "sa" style fixes if it touches accents at all. Type "sont" in an English chat, or "coin"/"chat"/"pain" in French, and something fires. Teams's own autocorrect at least knows the declared language; a keystroke-level replacer knows nothing. He wanted fewer red underlines; he will get silent substitutions that make a message to an external partner wrong without any underline warning him.</p>
+<p>The year-two friction: an Accessibility-permission daemon (Typinator, espanso, all of them) sits under every keystroke, including Terminal, Claude Code, password fields when secure input flickers, and Handy's Cmd+V pastes. The research already lists Tahoe permission loops for espanso and trigger bugs for TextExpander on the same OS. He will spend more minutes disabling it per app than he ever lost to a red underline.</p>
+<p>The right question is not "which tool" but "is this pain even recurring". Teams &gt; Editor spellcheck &gt; add French, enable "Correct words while typing" for French, and see whether the pain survives a month. If the accent-dropping is the real habit, no third-party dictionary fixes it anyway.</p></div>
+ </details>
+
+ <details>
+ <summary>The First Principles Thinker <span class="advisor-kind">reframe lens</span></summary>
+ <div class="body"><p>You are asking "which tool", but the incident that triggered this does not contain a tool-shaped problem.</p>
+<p>Strip it down. One word, "creer", underlined in one app, with suggestions from the wrong dictionary. That is not evidence that macOS lacks system-wide autocorrect. It is evidence that Teams' spell checker had no French dictionary loaded. Your own research says so: Teams now ships multi-language spellcheck (up to 5 languages) and its own autocorrect, on by default for the primary language, off by default for the others. French was off. The fix is a checkbox in Settings &gt; General &gt; Editor spellcheck, costs zero dollars, adds zero Accessibility-permission daemons, and touches nothing outside Teams.</p>
+<p>Now test the premises the framed question smuggles in:</p>
+<ul><li>"System-wide." You named two apps. Two per-app settings is not a system-wide problem. Discord's Chromium spellcheck also takes a language list.</li><li>"As I type." Was the pain that nothing auto-fixed, or that the red underline offered "career" for a French word? The second is the one that actually annoyed you, and it is a dictionary-language bug, not a missing feature.</li><li>"Typos." "creer" is a missing accent, not a keystroke slip. An 800-entry misspelling list (Typinator FR) may or may not contain it; you have no data on what your errors actually look like, because you have one sample.</li></ul>
+<p>The fatal flaw in the tool route: mixed FR/EN in the same message is the one case dictionary autocorrect cannot do safely. "chat", "pain", "coin", "main", "on" are valid in both languages; every misspelling set that "coexists" is guessing. A resident keystroke monitor that silently rewrites words is the highest-cost, highest-risk category on your list, bought to solve a problem you have observed once.</p>
+<p>The right question is: after enabling French in Teams and Discord, does anything still hurt in the next two weeks? If yes, you will have real samples, and then the tool question is worth asking.</p></div>
+ </details>
+
+ <details>
+ <summary>The Expansionist <span class="advisor-kind">upside lens</span></summary>
+ <div class="body"><p>The question is framed too small. "Fix typos in Teams" is the symptom; the trigger word gives away the real prize: "creer" is not a misspelling, it is French typed without accents. That is a whole typing habit, and it is the thing worth buying.</p>
+<p>The upside nobody is pricing:</p>
+<ul><li><strong>Accent-free French at full speed, everywhere.</strong> A vendor-maintained FR set of 800+ entries (Typinator 10.2) is mostly accent restorations: creer→créer, etre→être, deja→déjà, francais→français. Turn that on and he never reaches for Option-e again, in Teams, Discord, Gmail, the terminal's chat pane. The Teams-only toggle (free, "commonly misspelled words", no custom entries) cannot do this and dies at the Teams window edge. Discord and every external partner chat stay broken.</li><li><strong>The dictionary compounds.</strong> Every typo he corrects once becomes a rule forever. In a year he has a personal FR/EN orthography layer that no per-app setting will ever give him. Espanso stores this as YAML he can grep, version and carry to the next Mac; Typinator exports sets. Either way the asset outlives the tool.</li><li><strong>Handy already proves the delivery path.</strong> Speech-to-text pasting via Cmd+V works in his Electron apps today. A clipboard-backend expander rides the exact same channel, so the "Electron drops injected keys" objection is already answered on this machine.</li><li><strong>One-time $49.99 buys the FR+EN coexistence explicitly designed to not fight each other</strong>, which is the one thing Teams still gets wrong on Mac as of March 2026.</li></ul>
+<p>Ride it further: once the corrector is in place, add his own recurring English/French false friends and his project names, and Handy's transcripts become a source of new entries. Don't settle for the free Teams checkbox; it solves one app and zero accents.</p></div>
+ </details>
+
+ <details>
+ <summary>The Outsider <span class="advisor-kind">fresh-eyes lens</span></summary>
+ <div class="body"><p>Reading this cold, the question buries its own answer in the research facts. Teams shipped its own autocorrect ("Correct words while typing") in Dec 2025–Feb 2026, and it is on by default for the primary language, off by default for the others. The trigger incident was "creer" getting English suggestions. That is exactly what you'd expect if French is not the primary language and French autocorrect was never switched on. The fix described on the page is a checkbox: Settings &gt; General &gt; Editor spellcheck &gt; Manage, add French, enable correct-while-typing for it. Cost: zero. That is the first thing to try, and the question should have been "does the per-app setting fix it?" before "which $50 tool?"</p>
+<p>Things a stranger cannot parse on this page:</p>
+<ul><li>"system-wide" vs "in Teams" are two different asks. The trigger is one app. The framing escalates to all Chromium apps with no evidence he types badly enough in Discord to care.</li><li>"800+ FR AutoCorrection set" (Typinator) means nothing without knowing what's in it. 800 entries could be "ceer -&gt; créer" or could be 800 English-loanword fixes. Unverified for the actual failure case.</li><li>"typofixer-fr (entry counts unverified)" for Espanso: same, plus a page full of Tahoe bugs (#2530, #2402, #2576, #2562) and "Electron apps often drop injected keys". The one environment he cares about is the one it's worst at.</li><li>Nothing states which language Teams considers his primary. That single fact decides the whole thing and is absent.</li></ul>
+<p>Fatal-flaw check on the paid options: every keystroke tool listed works by clipboard/keystroke injection and a mixed FR/EN typist gets fired on by two dictionaries at once. "crier / career" for "creer" is precisely what a dumb English autocorrect does to French, and a $50 tool doing that silently across every app is worse than red underlines.</p>
+<p>Answer: flip the Teams setting, type for a week, come back only if it's still broken.</p></div>
+ </details>
+
+ <details>
+ <summary>The Executor <span class="advisor-kind">Monday-morning lens</span></summary>
+ <div class="body"><p>Monday morning, before spending a cent: open Teams, Settings &gt; General &gt; Editor spellcheck &gt; Manage, add French, and turn on "Correct words while typing" for French. It's off by default for extra languages, which is almost certainly why "creer" got English suggestions and no fix. Then type "creer" in a chat to yourself. That's a five-minute experiment that may close the whole question, because the trigger was one Teams chat, not Discord, not a system-wide itch.</p>
+<p>If that works, stop. Live with it a week. Discord will still only underline, but that's a hypothetical pain until it actually bites.</p>
+<p>If Teams' autocorrect is flaky (the March 2026 reports say Mac multi-language is), the next cheapest test is Typinator's trial, not Espanso. Espanso is free, but the Tahoe Accessibility loops (#2530, #2402, #2576) plus per-app clipboard backend tuning for Electron is a Saturday gone, and the FR/EN typofixer entry counts aren't even verified. Typinator 10.2 gives 800+ FR and 800+ EN sets built to coexist, built for Tahoe, $49.99 once. The trial answers in a day whether keystroke injection actually lands in Teams and Discord on this machine.</p>
+<p>The two things that will eat time, whichever tool:</p>
+<ul><li>Expansions firing where they must not: Terminal, VS Code, password fields, Handy's Cmd+V paste. Day one, exclude those apps explicitly. Test a paste from Handy and a typed shell command before trusting it.</li><li>Real-word collisions between the FR and EN sets when mixing languages in one message. Keep a scratch chat open for the first week, watch for mangled words, delete offending entries as they appear.</li></ul>
+<p>Ship order: Teams setting (5 min) → one week → Typinator trial only if needed → buy only if you caught it fixing something you'd have shipped wrong.</p></div>
+ </details>
+
+ <p class="round-label">Round 2: Peer review</p>
+
+ <details>
+ <summary>Reviewer 1</summary>
+ <div class="body"><p><strong>1. Strongest: A.</strong> Only one that gives a runnable sequence with a fallback (Teams toggle → week → Typinator trial → buy only on evidence), names the day-one exclusions (Terminal, VS Code, password fields, Handy's Cmd+V), and plans for FR/EN collisions instead of just warning about them.</p>
+<p><strong>2. Biggest blind spot: E.</strong> It builds the whole case on "the FR set is mostly accent restorations" while the research marks entry contents unverified, and it never confronts that accent restoration is context-dependent: a/à, ou/où, la/là, sur/sûr, du/dû cannot be fixed by any word list. It also ignores that its "dictionary compounds" asset fires blind on English text in mixed messages, the exact mangling B/C/D flag.</p>
+<p><strong>3. What all five missed:</strong></p>
+<ul><li>The actual complaint was wrong-language <em>suggestions</em>, not missing auto-fix. The safest first step is adding French to Teams/Discord spellcheck with autocorrect left <strong>off</strong>: correct underlines, zero silent rewrites. Nobody separated the two toggles.</li><li>Four responses treat the Teams autocorrect checkbox as risk-free, but it is the same silent replacer, driven by the multi-language detection the research says is flaky on Mac as of March 2026. Teams-mangling a message to an external partner is the identical failure mode they fear from Typinator, minus the exclusion list.</li><li>Handy already produces accented French; dictating French messages sidesteps the accent habit with tooling he owns.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 2</summary>
+ <div class="body"><p><strong>1. Strongest: C.</strong> It correctly diagnoses "creer" as a dropped accent, not a typo (so an 800-entry misspelling set is unverified for the actual failure), covers both named apps with per-app language settings, names the mixed FR/EN real-word collision risk, and sets a concrete exit criterion: collect real samples for two weeks before any tool question. A is more procedural but escalates to a Typinator trial without checking that the set addresses accents at all.</p>
+<p><strong>2. Biggest blind spot: E.</strong> It sells Typinator on the claim that its FR set is "mostly accent restorations" with zero evidence, and never mentions real-word collisions ("chat", "pain", "coin", "sont"), Accessibility loops, secure-input flicker, or exclusions for Terminal/VS Code/Handy. It also conflates Handy's hotkey paste with trigger detection: pasting works; keystroke <em>monitoring</em> is the part that breaks in Electron.</p>
+<p><strong>3. Missed by all five:</strong></p>
+<ul><li>The premise that Chromium/Electron ignore NSSpellChecker is at least partly wrong on macOS: Chrome and Electron defer to the native spellchecker, whose language list is System Settings &gt; Keyboard &gt; Spelling ("Automatic by Language" / add French). That is one zero-cost setting covering Teams, Discord and everything else, and nobody proposed checking it.</li><li>The habit is input-side, not correction-side: Handy already produces accented French; a Tahoe press-and-hold or a French layout removes the error before any corrector is needed.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 3</summary>
+ <div class="body"><p><strong>1. Strongest: A.</strong> Only response that both deflates the question (Teams checkbox first, one-week wait) and gives a concrete path if it fails: Typinator trial before purchase, day-one exclusion list (Terminal, VS Code, password fields, Handy's Cmd+V), scratch chat to catch FR/EN collisions. C is sharper on premises but stops at "wait for samples."</p>
+<p><strong>2. Biggest blind spot: E.</strong> Asserts the Typinator FR set is "mostly accent restorations" with zero evidence (the research explicitly calls entry contents unverified), and claims Handy's Cmd+V "proves the delivery path" when a one-shot transcript paste is nothing like mid-word keystroke substitution. It never addresses real-word collisions in mixed FR/EN, the exact failure mode the stakes section names, and cheerfully proposes expansions in "the terminal's chat pane."</p>
+<p><strong>3. What all five missed:</strong></p>
+<ul><li>The accent-dropping is an <strong>input-layer</strong> problem, not a spellcheck one. Nobody asked which keyboard layout he uses. A French/dead-key layout, or press-and-hold accents, restores é at the keystroke, works in every app including Electron, costs nothing, and involves no daemon. That sits above every tool discussed.</li><li><strong>Privacy of the "free" fix</strong>: Teams spellcheck/autocorrect is Microsoft Editor, a cloud service. Given his local-first stance, the checkbox everyone recommends may be the option that ships his text off-device. Verify before flipping it.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 4</summary>
+ <div class="body"><p><strong>1. Strongest: A.</strong> Only response that turns the diagnosis into a sequenced plan with the two real failure modes named up front: app exclusions (Terminal, VS Code, password fields, Handy's Cmd+V) and FR/EN real-word collisions, each with a concrete day-one test. It also prices Espanso's Tahoe cost honestly instead of calling it "free".</p>
+<p><strong>2. Biggest blind spot: E.</strong> It sells accent restoration everywhere and never asks what an FR set does inside an English sentence ("a", "ou", "sur", "chat", "pain" all fire). It also misreads Handy as proof: Handy only pastes; it never intercepts keystrokes, so it proves nothing about trigger detection in Electron, which is the part that breaks.</p>
+<p><strong>3. What all five missed.</strong> On macOS, Chromium/Electron spellcheck (underline + suggestions) is delegated to NSSpellChecker, and the language comes from System Settings &gt; Keyboard &gt; Text Input &gt; Edit &gt; Spelling. If that is set to "U.S. English" rather than "Automatic by Language", every Electron app (Discord included) gets English-only suggestions, exactly the observed symptom. The framed "research fact" that Chromium ignores the OS is only true for autocorrect, not spellcheck. The council should verify that one system setting before Teams' own toggle: it is the only fix that is zero-cost, system-wide, and daemon-free. Nobody also asked whether accent-less French in chat is a cost at all.</p></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 5</summary>
+ <div class="body"><p><strong>1. Strongest: A.</strong> Same free-first diagnosis as B/C/D, but the only one that ships an order (Teams toggle → week → Typinator trial → buy only on caught mistakes) and names the two operational traps day one: exclusions for Terminal/VS Code/password fields/Handy's paste, and FR/EN real-word collisions with a scratch chat to catch them.</p>
+<p><strong>2. Biggest blind spot: E.</strong> It builds the whole case on "the FR set is mostly accent restorations" with zero evidence (research says entry contents unverified), never mentions collisions, secure input or terminal firing, and misreads Handy: Handy proves clipboard <em>paste</em> lands in Electron, not that per-keystroke <em>trigger detection</em> works there, which is the failing half.</p>
+<p><strong>3. What all five missed:</strong></p>
+<ul><li>B and E flatly contradict each other on whether "creer→créer" is in any set, and nobody proposed the two-minute settle: espanso's typofixer-fr YAML is public on the hub, Typinator's trial ships its FR set; grep both for <code>creer</code>, <code>etre</code>, <code>deja</code>. That one check decides accent-habit vs typo-tool.</li><li>The accent habit has a native, daemon-free fix nobody named: press-and-hold on <code>e</code> (works in Chromium) or a layout where accents are first-class (French/ABC-Extended).</li><li>Discord's Chromium spellcheck languages follow macOS System Settings &gt; Keyboard &gt; Spelling; adding French there is the actual free "system-wide" lever for the underline problem.</li></ul></div>
+ </details>
+
+ <footer>
+ Generated by the <code>llm-council</code> skill on Wednesday, 16 September 2026, 12:59.
+ Full transcript and anonymization map in
+ <code>council-transcript.md</code>.
+ </footer>
+
+</div>
+</body>
+</html>

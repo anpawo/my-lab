@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Council Verdict: 2026-09-24</title>
+<style>
+ :root {
+ --paper: #fafaf7;
+ --ink: #141413;
+ --ink-soft: #4b4b47;
+ --ink-mute: #8a8a83;
+ --rule: #e5e3dc;
+ --accent: #1e3a5f;
+ --accent-soft: #e8eef5;
+ --sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ --serif: "Iowan Old Style", "Iowan", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+ --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+ }
+ * { box-sizing: border-box; }
+ html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); }
+ body { font-family: var(--serif); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+ .wrap { max-width: 780px; margin: 0 auto; padding: 64px 32px 96px; }
+
+ .eyebrow {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ color: var(--accent);
+ font-weight: 600;
+ margin: 0 0 16px;
+ }
+ h1.question {
+ font-family: var(--serif);
+ font-weight: 500;
+ font-size: 34px;
+ line-height: 1.25;
+ letter-spacing: -0.01em;
+ margin: 0 0 20px;
+ color: var(--ink);
+ }
+ .meta {
+ font-family: var(--sans);
+ font-size: 13px;
+ color: var(--ink-mute);
+ margin: 0 0 56px;
+ border-bottom: 1px solid var(--rule);
+ padding-bottom: 28px;
+ }
+
+ section.verdict {
+ background: var(--accent-soft);
+ border-left: 3px solid var(--accent);
+ padding: 36px 40px;
+ margin: 0 0 56px;
+ border-radius: 2px;
+ }
+ section.verdict h2 {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ color: var(--accent);
+ margin: 0 0 24px;
+ font-weight: 600;
+ }
+ section.verdict h3 {
+ font-family: var(--sans);
+ font-size: 14px;
+ font-weight: 600;
+ color: var(--ink);
+ margin: 28px 0 8px;
+ letter-spacing: 0;
+ }
+ section.verdict h3:first-of-type { margin-top: 0; }
+ section.verdict p, section.verdict ul { margin: 0 0 8px; }
+ section.verdict ul { padding-left: 20px; }
+ section.verdict li { margin-bottom: 6px; }
+ section.verdict .recommendation {
+ font-size: 19px;
+ line-height: 1.5;
+ margin-top: 4px;
+ }
+ section.verdict .one-thing {
+ font-family: var(--serif);
+ font-style: italic;
+ font-size: 18px;
+ border-top: 1px solid rgba(30, 58, 95, 0.2);
+ padding-top: 20px;
+ margin-top: 28px;
+ }
+
+ .round-label {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.22em;
+ text-transform: uppercase;
+ color: var(--ink-mute);
+ font-weight: 600;
+ margin: 0 0 16px;
+ padding-top: 16px;
+ border-top: 1px solid var(--rule);
+ }
+
+ details {
+ border-bottom: 1px solid var(--rule);
+ padding: 20px 0;
+ }
+ details[open] { padding-bottom: 28px; }
+ summary {
+ cursor: pointer;
+ list-style: none;
+ font-family: var(--sans);
+ font-weight: 500;
+ font-size: 15px;
+ color: var(--ink);
+ display: flex;
+ align-items: baseline;
+ gap: 12px;
+ user-select: none;
+ }
+ summary::-webkit-details-marker { display: none; }
+ summary::before {
+ content: "+";
+ font-family: var(--mono);
+ color: var(--accent);
+ font-weight: 400;
+ font-size: 16px;
+ transition: transform 160ms ease;
+ display: inline-block;
+ width: 12px;
+ }
+ details[open] summary::before { content: "−"; }
+ .advisor-kind {
+ font-family: var(--sans);
+ font-size: 11px;
+ letter-spacing: 0.16em;
+ text-transform: uppercase;
+ color: var(--ink-mute);
+ margin-left: 4px;
+ }
+ details .body {
+ margin-top: 16px;
+ padding-left: 24px;
+ color: var(--ink-soft);
+ font-size: 16px;
+ line-height: 1.65;
+ }
+ details .body p { margin: 0 0 12px; }
+ details .body p:last-child { margin-bottom: 0; }
+
+ footer {
+ margin-top: 80px;
+ padding-top: 24px;
+ border-top: 1px solid var(--rule);
+ font-family: var(--sans);
+ font-size: 12px;
+ color: var(--ink-mute);
+ line-height: 1.6;
+ }
+ footer code {
+ font-family: var(--mono);
+ background: rgba(30, 58, 95, 0.08);
+ padding: 1px 6px;
+ border-radius: 3px;
+ color: var(--ink);
+ font-size: 11px;
+ }
+
+ @media (max-width: 640px) {
+ .wrap { padding: 40px 20px 64px; }
+ h1.question { font-size: 26px; }
+ section.verdict { padding: 28px 24px; }
+ }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+ <p class="eyebrow">Council Verdict</p>
+ <h1 class="question">Full-disk audit (6 agents, ~90 findings): what&#x27;s the short list that actually matters — space, data-loss risks, config rot, noise?</h1>
+ <p class="meta">24 September 2026 &nbsp;·&nbsp; 5 advisors · 5 peer reviewers</p>
+
+ <section class="verdict">
+ <h2>Synthesis</h2>
+
+ <h3>Where the council agrees</h3>
+ <ul><li><strong>All five:</strong> space is not the emergency (42 GB free). One delete — <code>~/.local/share/vcpkg/buildtrees</code> + <code>packages</code> (38.7 GB) — is most of the win; <code>brew cleanup -s</code> (4 GB) is the only other one worth doing.</li><li><strong>All five:</strong> the real risk is work that exists in one place: <code>~/self/volt3</code> (zero commits), video-code worktrees (unmerged commits), my-hub <code>cartes-crypto</code> (5 dirty files). Handle them before deleting anything.</li><li><strong>Contrarian, First Principles, Expansionist, Executor:</strong> only two config fixes matter — the <code>magic</code> MCP that fails every session, and the <code>memory/general.md</code> line still sending agents to <code>~/.epitech-webkit</code>.</li><li><strong>Four of five:</strong> ignore everything under ~1 GB, unused apps, brew formulae, orphan dotfiles.</li></ul>
+
+ <h3>Where the council clashes</h3>
+ <ul><li><strong>Release-only vcpkg (drop 7.8 GB debug libs):</strong> Expansionist for, Contrarian against — changing the triplet changes the ABI hash, misses the binary cache and rebuilds Qt from source. All 5 reviewers sided with the Contrarian; so does the chair.</li><li><strong>Drop the Android emulator (15 GB):</strong> Expansionist (Paparazzi + real phone) vs Contrarian/Executor (my-hub is Android). Kept: it&#x27;s a workflow call, not cleanup.</li><li><strong>Why buildtrees are safe:</strong> binary cache (Executor, First Principles) vs &quot;vcpkg never reuses them&quot; (Contrarian). Chair checked: both hold — 47 archives for 47 installed ports.</li></ul>
+
+ <h3>Blind spots the council caught</h3>
+ <ul><li><strong>No backup exists (verified):</strong> <code>tmutil</code> reports no Time Machine destination. Every only-copy item is one SSD failure from gone. Raised by two advisors, confirmed by the chair.</li><li><strong>Secrets, not clutter:</strong> <code>~/.config/elevenlabs/key</code> from an uninstalled tool, and 17 of the <code>~/.claude.json.bak-*</code> files carry the magic MCP config. Rotating a key leaves the old copies.</li><li><strong>Worktrees recur:</strong> the auto-commit rule covers the projects, not <code>.claude/worktrees</code> inside them — that&#x27;s how the dirty ones piled up. (Checked: none is live; last touched Sep 6–12.)</li><li><strong>Dismissed after checking:</strong> APFS local snapshots — none exist, deletions free space immediately. The &quot;missing 70 GB&quot; is <code>/Applications</code> (19 GB) + Homebrew (15 GB).</li></ul>
+
+ <h3>The recommendation</h3>
+ <p class="recommendation"><p>Protect first, then one delete. Commit and push the only-copy work (volt3, the 5 worktrees, video-code&#x27;s 8 dirty files), then delete vcpkg buildtrees + packages and run <code>brew cleanup -s</code> — ~43 GB, no rebuild risk. Keep the debug libs, the emulator, pyenv 3.14.2 (the active Python) and node@22 (portfolio needs it); I overrule the Expansionist on the triplet change. Set up a backup — that, not disk space, is the gap this audit exposed.</p></p>
+
+ <p class="one-thing"><strong>Do first:</strong> <p>Commit <code>~/self/volt3</code> (check its <code>.gitignore</code> first) and push it to a private GitHub repo — it is the only copy of that project.</p></p>
+ </section>
+
+ <p class="round-label">Round 1: Advisors</p>
+
+ <details>
+ <summary>The Contrarian <span class="advisor-kind">downside lens</span></summary>
+ <div class="body"><p><strong>The real failure mode is <code>git worktree remove --force</code>, not disk space.</strong> 42G free is not an emergency. A size-sorted list puts .claude/worktrees (361M) next to caches, and one careless cleanup pass will throw away unmerged commits.</p>
+<ul><li>Space — four actions, ~47G, then stop: vcpkg buildtrees (30G) + packages (8.7G) — safe, but not for the reason given. The binary-cache argument is false comfort: its hash includes the compiler version, so the next Command Line Tools update invalidates it anyway. Buildtrees are safe because vcpkg never reuses them. <code>brew cleanup -s</code> (4.2G). AVD quick-boot snapshot (3.9G). DO NOT touch vcpkg_installed/.../debug (7.8G) or ~/.cache/vcpkg/archives: deleting debug libs while vcpkg&#x27;s status file still marks them installed gives Debug link errors or an unplanned Qt rebuild from source.</li><li>Data-loss risks nobody asked about: volt3 (zero commits, only copy) — commit today. Video-code worktrees and my-hub cartes-crypto hold unmerged/dirty work — merge or push, never remove. No backup is mentioned anywhere: without Time Machine, every only-copy item (openclaw tarball, finance-crypto results, manim edits) is one dead SSD from gone. That dominates any item on the list. ~/.config/elevenlabs holds a key file: revoke the key, don&#x27;t just delete the folder.</li><li>Config rot: memory/general.md still names ~/.epitech-webkit — agents follow memory, fix the line before deleting the folder or a future session will &quot;repair&quot; it. ~/.claude.json: 21 .bak files show something rewrites it constantly; with fleet sessions running, a hand edit gets overwritten — use <code>claude mcp remove magic</code>.</li><li>Ignore: everything under 1G, brew formulae, unopened apps, rustup, Office, the emulator stack (my-hub is Android), Docker&#x27;s half update. Respondus is an exam lockdown app — deleting it is how you fail an exam.</li></ul>
+<p>The pyenv conflict was only caught because two agents disagreed, so the &quot;HIGH&quot; labels can&#x27;t be trusted.</p></div>
+ </details>
+
+ <details>
+ <summary>The First Principles Thinker <span class="advisor-kind">reframe lens</span></summary>
+ <div class="body"><p><strong>Wrong question: this isn&#x27;t a disk-space problem, it&#x27;s a single-copy-of-data problem.</strong></p>
+<p>Premise check:</p>
+<ul><li>&quot;Disk space matters&quot; — barely. 42G free of 228G is not a crisis. One item alone (vcpkg buildtrees 30G + packages 8.7G) roughly doubles free space. Everything else in the other ~80 findings is maybe 15G combined. Ranking it is wasted attention.</li><li>&quot;Deleting wrong thing = hours rebuilding Qt&quot; — false for the big item. buildtrees/packages are intermediates; output lives in video-code/vcpkg_installed and the 2G binary cache in ~/.cache/vcpkg/archives. The only rule: never touch vcpkg_installed or ~/.cache/vcpkg/archives. Everything else under ~/.local/share/vcpkg is safe.</li><li>&quot;Lost uncommitted work&quot; is the real stake — but that&#x27;s not caused by cleanup, it&#x27;s caused by work existing in exactly one place. Nobody checked for Time Machine/backups. That&#x27;s the actual question.</li></ul>
+<p>The short list:</p>
+<ul><li>Space — one action: delete ~/.local/share/vcpkg/{buildtrees,packages} (~39G). Add --clean-after-build so it never regrows. Then <code>brew cleanup -s</code> (~4G). Stop.</li><li>Only-copy work (do before #1): ~/self/volt3 (zero commits), video-code .claude/worktrees (unmerged commits), my-hub cartes-crypto (5 dirty), ~/repo/manim (5 uncommitted edits), finance-crypto CSVs (410M, gitignored, costly), ~/.openclaw-backup tar.gz. Fix = commit+push or copy to external.</li><li>Config rot — just two: magic MCP stale key (fails every session start, you saw it this session), and memory/general.md pointing agents at ~/.epitech-webkit when the path moved to lightpanda.</li><li>Ignore: everything under 1G, unused apps, brew formulae, orphan dotfiles, 37 dead .claude.json project entries.</li></ul>
+<p>First action: <code>git -C ~/self/volt3 add -A &amp;&amp; git commit -m init</code>, then push somewhere.</p></div>
+ </details>
+
+ <details>
+ <summary>The Expansionist <span class="advisor-kind">upside lens</span></summary>
+ <div class="body"><p><strong>You&#x27;re treating this as a one-time purge. The real win is making the space not come back.</strong></p>
+<ul><li>The one move that matters: video-code&#x27;s Qt is ~46G of your ~63G reclaimable (buildtrees 30G + packages 8.7G + debug libs 7.8G). Deleting it once is half the win — next Qt rebuild regrows all of it. Make it permanent: release-only triplet (VCPKG_BUILD_TYPE release) + --clean-after-build. Then ask the bigger question: ~40 Homebrew qt* formulae (801M) are already installed. If video-code can build against brew&#x27;s Qt, &quot;hours rebuilding Qt from source&quot; stops being a risk at all — the scary stake is optional.</li><li>Save the 2G binary cache (~/.cache/vcpkg/archives) before touching anything. It&#x27;s what makes the 46G safe.</li><li>The 15G emulator stack: the user&#x27;s own rules already say Paparazzi renders Android without an emulator, and the AVD is named after a real phone (honor200lite). Paparazzi + the physical phone over adb makes the emulator last-resort. That&#x27;s 15G plus alignment with the user&#x27;s own rule.</li><li>Risks: volt3 (zero commits) and 5 worktrees with dirty files. Don&#x27;t just check them once: dirty worktrees / zero-commit repos / unpushed commits could be a ~20-line script in my-setup (auto-committed anyway) run by launchd like the existing epitech-scan. Six agents was expensive; a script reruns it for free.</li><li>Config rot that pays every session: magic MCP failing (seen again this session), 37/85 dead .projects entries, memory/general.md still sending agents to ~/.epitech-webkit.</li><li>Ignore: brew formulae, LaunchAgents, Office, .bak files, orphan dotfiles, anything under 500M.</li></ul>
+<p>First action: <code>brew cleanup -s</code> (4.2G, zero risk), then delete vcpkg buildtrees after confirming the archive cache exists.</p></div>
+ </details>
+
+ <details>
+ <summary>The Outsider <span class="advisor-kind">fresh-eyes lens</span></summary>
+ <div class="body"><ul><li><strong>Is there a disk problem at all?</strong> The file says both &quot;data volume full-ish&quot; and &quot;42G free&quot; (18%). No one says what goes wrong at 42G, so the question takes for granted that space is urgent. On the numbers given, it isn&#x27;t. The only real emergency on the page is lost work, and those items are scattered among the cache entries.</li><li><strong>Lead with the loss risks, not the space.</strong> Five items: volt3 (zero commits, only copy), video-code worktrees (unmerged commits), my-hub cartes-crypto (5 dirty files), manim (5 uncommitted edits), openclaw-backup (only copy). Five items is short enough to act on. Ninety is not.</li><li><strong>Jargon that blocks any action:</strong> &quot;buildtrees&quot;, &quot;packages&quot;, &quot;triplet&quot;, VCPKG_BUILD_TYPE, &quot;binary cache&quot;, &quot;quick-boot snapshot&quot;, &quot;regrow&quot;, &quot;Caskroom&quot;, &quot;shims&quot;. A first-time reader can&#x27;t tell which of these deleting would hurt. HIGH/MED/LOW is never defined — safe? valuable? risky? &quot;Memory says&quot; and &quot;agent1 vs agent6&quot;: a reader can&#x27;t settle conflicts between agents they never saw.</li><li><strong>One unchecked claim bears on the biggest item.</strong> &quot;Binary cache (2G) makes rebuild fast&quot; justifies deleting 38.7G, and the stakes name a Qt rebuild as the worst outcome. Nobody shows a 2G cache actually covers a 19G qtdeclarative build tree. Until checked, the 30G item is not &quot;HIGH&quot; safe.</li><li><strong>A security item filed as clutter.</strong> ~/.config/elevenlabs has a key file, listed as &quot;orphan config&quot;. A leftover API key should be revoked and deleted, not ignored.</li><li><strong>Mixed-up categories.</strong> &quot;Stale&quot;, &quot;orphan&quot;, &quot;dead since Sep 5&quot;, &quot;never opened since migration&quot;, &quot;never typed in fish history&quot; are five different measures of &quot;unused&quot;. Not typing a command doesn&#x27;t mean scripts don&#x27;t use it, as the node@22 correction proves.</li><li><strong>Fix for the output:</strong> each surviving line says what it is in plain words, the size, and what breaks if deleted. If that last part can&#x27;t be stated, the item doesn&#x27;t belong on the list.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>The Executor <span class="advisor-kind">Monday-morning lens</span></summary>
+ <div class="body"><p><strong>Monday morning is one 20-minute session. Two commands get most of the space; after that, stop.</strong></p>
+<ul><li>Space — ~47G, five low-risk commands:</li><li><code>rm -rf ~/.local/share/vcpkg/buildtrees ~/.local/share/vcpkg/packages</code> → 38.7G. Built output is in video-code/vcpkg_installed; ~/.cache/vcpkg/archives (2G) is the safety net. Never touch archives.</li><li><code>brew cleanup -s</code> → 4.2G.</li><li><code>rm ~/.android/avd/honor200lite.avd/snapshots/default_boot</code> → 3.9G, rebuilds on next emulator launch.</li><li>Office .pkg copies in Caskroom 3.4G + empty Trash.</li><li>What eats time: buildtrees regrows on the next vcpkg Qt bump. Add --clean-after-build to video-code&#x27;s vcpkg install now — one line, the saving lasts.</li><li>Data-loss risks — 5 minutes, before any deletion: volt3 has zero commits — <code>git add -A &amp;&amp; git commit -m wip</code>, 30 seconds, highest-value action on the list. The 4 video-code worktrees and my-hub cartes-crypto: don&#x27;t delete, push each to a branch or look at them this week. finance-crypto backtests + ml/resultats (410M): keep away from any cleanup.</li><li>Config rot — two fixes, because they mislead every session: magic MCP fails auth every startup — remove or rotate the key. memory/general.md still names .epitech-webkit — fix that line.</li><li>Ignore everything else: anything under 1G (rustup, npx, serve-web, old Claude versions), unopened apps, brew formulae, orphan dotfiles, the 37 dead .claude.json entries and .bak files, LaunchAgents, pyenv (active, keep), node@22 (keep).</li></ul>
+<p>The question is too big. With 42G free, space isn&#x27;t urgent. The commits are the only urgent work. Run the commands above and put a &quot;done by Wednesday&quot; on the worktrees.</p></div>
+ </details>
+
+ <p class="round-label">Round 2: Peer review</p>
+
+ <details>
+ <summary>Reviewer 1</summary>
+ <div class="body"><ul><li>Strongest: D — only one to flag the 7.8G debug-libs trap (vcpkg status file still lists them installed) and to explain why buildtrees are safe (never reused, not &quot;the binary cache covers it&quot;); also catches the elevenlabs key, Respondus, and <code>claude mcp remove</code> since .claude.json keeps getting rewritten.</li><li>Blind spot: B — pushes a release-only triplet; changing the triplet changes vcpkg&#x27;s ABI hash, the 2G cache stops matching, next build compiles Qt from source — the exact worst case. Also omits finance-crypto, manim, openclaw only-copies.</li><li>All missed: .claude/worktrees may belong to live fleet sessions — check before touching. APFS local snapshots can hold deleted blocks, so deleting 39G may free little; run <code>tmutil listlocalsnapshots /</code>.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 2</summary>
+ <div class="body"><ul><li>Strongest: D — corrects the findings rather than repeating them (cache not a real net; debug libs trap; fix memory before deleting ~/.epitech-webkit; elevenlabs key is revocation, Respondus is exams).</li><li>Blind spot: E — the plan the user would actually run treats archives as a safety net unverified, never asks about backups, skips the key; would delete 47G without checking the one assumption protecting Qt.</li><li>All missed: ~70G of used space is unexplained (228−42 = 186 used vs ~105 home + 12 system) — snapshots? Live sessions during cleanup. <code>git add -A</code> on volt3 then &quot;push somewhere&quot; can publish secrets — check .gitignore, use a private remote.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 3</summary>
+ <div class="body"><ul><li>Strongest: D — only one separating the two vcpkg items correctly (buildtrees/packages safe because never reused; debug libs must stay), plus elevenlabs, Respondus, memory-before-delete ordering.</li><li>Blind spot: B — release-only triplet misses the archive cache and triggers the full Qt rebuild; treats it as free; pushes dropping the emulator while my-hub is Android; no backups or key.</li><li>All missed: the ~70G gap (snapshots / swap / purgeable); if snapshots hold it, deleting frees nothing and they answer the backup question. Nobody checked video-code&#x27;s main checkout for uncommitted work — never auto-committed, and it&#x27;s the repo whose vcpkg gets touched.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 4</summary>
+ <div class="body"><ul><li>Strongest: D — catches the traps that cause real damage: debug libs, weak cache, memory-before-delete, <code>claude mcp remove</code>, key revocation, Respondus, backup question.</li><li>Blind spot: B — counts debug libs as reclaimable and floats brew Qt without the rebuild risk; skips backups, manim, finance-crypto, the key.</li><li>All missed: worktrees will keep coming back — the auto-commit rule covers the projects but not the agent worktrees inside them; fix the rule/stop hook, not just this instance. The 21 .claude.json.bak files likely contain MCP keys including magic&#x27;s — rotating the key leaves old copies on disk; they&#x27;re a secrets problem, not clutter.</li></ul></div>
+ </details>
+
+ <details>
+ <summary>Reviewer 5</summary>
+ <div class="body"><ul><li>Strongest: D — explains why buildtrees are safe, flags the cache weakness and debug-lib trap, names <code>git worktree remove --force</code> as the real data-loss command, elevenlabs, Respondus, <code>claude mcp remove</code>.</li><li>Blind spot: E — rm -rf first, cache unverified, &quot;commit&quot; volt3 but never &quot;push&quot; (only copy stays on the same SSD), no backup, drops the live elevenlabs key under &quot;orphan dotfiles&quot;.</li><li>All missed: APFS local snapshots may hold freed space. The audit is a snapshot while fleet sessions run in worktrees — re-check dirty state right before deleting. <code>--clean-after-build</code> goes into video-code, never auto-committed, so it waits for the user&#x27;s review.</li></ul></div>
+ </details>
+
+ <footer>
+ Generated by the <code>llm-council</code> skill on 24 September 2026.
+ Full transcript and anonymization map in
+ <code>council-transcript.md</code>.
+ </footer>
+
+</div>
+</body>
+</html>
