@@ -27,6 +27,7 @@ final class Overlay: NSPanel {
 
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+    func refreshLayers() { (contentView as! OverlayView).update() }
 }
 
 private final class OverlayView: NSView {
@@ -36,25 +37,15 @@ private final class OverlayView: NSView {
     private unowned let session: Session
     private enum Drag { case none, new(CGPoint), move(CGPoint), resize(Int) }
     private var drag = Drag.none
-    // The veil over this screen; in screen mode it fades between the two values on hover.
-    private var veil: CGFloat = 0.45
-    private var veilTarget: CGFloat = 0.45
-    private var fade: Timer?
 
-    private func fadeVeil(to target: CGFloat) {
-        guard target != veilTarget else { return }
-        veilTarget = target
-        fade?.invalidate()
-        let from = veil, start = Date()
-        fade = Timer.scheduledTimer(withTimeInterval: 1 / 60, repeats: true) { [weak self] t in
-            guard let self else { t.invalidate(); return }
-            let k = min(1, Date().timeIntervalSince(start) / 0.2)
-            self.veil = from + (target - from) * CGFloat(k)
-            self.needsDisplay = true
-            self.display()
-            if k >= 1 { t.invalidate() }
-        }
-    }
+    // Everything on screen is a layer, so a hover costs a mask path and a fade is Core
+    // Animation's: redrawing a 2940×1912 image on every mouse move is what lagged.
+    private let veil = CALayer()
+    private let hole = CAShapeLayer()
+    private let frameLayer = CAShapeLayer()
+    private let handlesLayer = CAShapeLayer()
+    private let labelBack = CALayer()
+    private let label = CATextLayer()
 
     init(screen: NSScreen, frozen: CGImage, session: Session) {
         self.display = screen
@@ -62,6 +53,26 @@ private final class OverlayView: NSView {
         self.session = session
         super.init(frame: CGRect(origin: .zero, size: screen.frame.size))
         wantsLayer = true
+        layer!.contents = frozen
+        layer!.contentsScale = screen.backingScaleFactor
+        layer!.contentsGravity = .resize
+        veil.frame = bounds
+        veil.backgroundColor = NSColor.black.cgColor
+        veil.opacity = 0.45
+        hole.fillRule = .evenOdd
+        hole.fillColor = NSColor.black.cgColor
+        veil.mask = hole
+        frameLayer.fillColor = nil
+        frameLayer.strokeColor = NSColor.white.cgColor
+        handlesLayer.fillColor = NSColor.white.cgColor
+        labelBack.backgroundColor = NSColor(white: 0, alpha: 0.7).cgColor
+        labelBack.cornerRadius = 4
+        label.fontSize = 11
+        label.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
+        label.foregroundColor = NSColor.white.cgColor
+        label.alignmentMode = .center
+        label.contentsScale = screen.backingScaleFactor
+        for l in [veil, frameLayer, handlesLayer, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -165,72 +176,63 @@ private final class OverlayView: NSView {
         }
     }
 
-    // MARK: Drawing
+    // MARK: Layers
 
-    override func draw(_ dirtyRect: NSRect) {
-        image.draw(in: bounds)
-        // The whole screen stays a little dark while the bar is up, whatever the mouse does, so
-        // it reads as "capturing". What the click would take gets a lighter tint and an outline;
-        // only the area selection shows through at full brightness.
-        if session.state.target == .screen {
-            // The screen under the mouse is the one a click takes: its veil fades away.
-            fadeVeil(to: session.hoverScreen == screen ? 0.08 : 0.45)
-        } else {
-            veil = 0.45
-            veilTarget = 0.45
-        }
-        NSColor(white: 0, alpha: veil).setFill()
-        bounds.fill()
-        switch session.state.target {
+    /// Called by the session after any hover or state change.
+    func update() {
+        let target = session.state.target
+        let hovered = target == .screen && session.hoverScreen == screen
+        var cut: CGRect?
+        var text: String?
+        var rounded = false
+        switch target {
         case .screen: break
         case .window:
-            // Only the hovered window shows through the veil.
-            if let w = session.hoverWindow {
-                let r = local(w.frame)
-                image.draw(in: r, from: r, operation: .copy, fraction: 1)
-                let frame = NSBezierPath(roundedRect: r.insetBy(dx: 1, dy: 1), xRadius: 10, yRadius: 10)
-                frame.lineWidth = 2
-                NSColor.white.setStroke()
-                frame.stroke()
-                label("\(w.app)  \(pixels(w.frame))", below: r)
-            }
+            if let w = session.hoverWindow { cut = local(w.frame); text = "\(w.app)  \(pixels(w.frame))"; rounded = true }
         case .area:
-            guard let sel = session.selection, screen.frame.contains(sel) else { return }
-            let r = local(sel)
-            image.draw(in: r, from: r, operation: .copy, fraction: 1)
-            outline(r, label: pixels(r))
-            NSColor.white.setFill()
-            for i in 0..<8 {
-                let p = handlePoint(r, i)
-                NSBezierPath(ovalIn: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)).fill()
-            }
+            if let sel = session.selection, screen.frame.contains(sel) { cut = local(sel); text = pixels(sel) }
         }
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        let path = CGMutablePath()
+        path.addRect(bounds)
+        if let cut { path.addRect(cut) }
+        hole.path = path
+        if let cut {
+            frameLayer.lineWidth = rounded ? 2 : 1
+            frameLayer.path = rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
+                                      : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
+            let handles = CGMutablePath()
+            if target == .area {
+                for i in 0..<8 { let p = handlePoint(cut, i); handles.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)) }
+            }
+            handlesLayer.path = handles
+            label.string = text
+            let size = (text! as NSString).size(withAttributes: [.font: label.font as! NSFont])
+            var box = CGRect(x: cut.minX, y: cut.minY - size.height - 10, width: size.width + 12, height: size.height + 6)
+            if box.minY < 0 { box.origin.y = cut.minY + 4 }
+            if box.maxX > bounds.maxX { box.origin.x = bounds.maxX - box.width }
+            labelBack.frame = box
+            label.frame = box.insetBy(dx: 0, dy: 3)
+        } else {
+            frameLayer.path = nil
+            handlesLayer.path = nil
+            labelBack.frame = .zero
+            label.frame = .zero
+        }
+        CATransaction.commit()
+
+        // The one thing that animates: the veil of the screen a click would take.
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.2)
+        veil.opacity = hovered ? 0.08 : 0.45
+        CATransaction.commit()
     }
 
     private func pixels(_ r: CGRect) -> String {
         let s = screen.backingScaleFactor
         return "\(Int(r.width * s)) × \(Int(r.height * s))"
-    }
-
-    private func outline(_ r: CGRect, label text: String) {
-        NSColor.white.setStroke()
-        let path = NSBezierPath(rect: r.insetBy(dx: -0.5, dy: -0.5))
-        path.lineWidth = 1
-        path.stroke()
-        label(text, below: r)
-    }
-
-    private func label(_ label: String, below r: CGRect) {
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium), .foregroundColor: NSColor.white,
-        ]
-        let size = (label as NSString).size(withAttributes: attrs)
-        var box = CGRect(x: r.minX, y: r.minY - size.height - 10, width: size.width + 12, height: size.height + 6)
-        if box.minY < 0 { box.origin.y = r.minY + 4 }
-        if box.maxX > bounds.maxX { box.origin.x = bounds.maxX - box.width }
-        NSColor(white: 0, alpha: 0.7).setFill()
-        NSBezierPath(roundedRect: box, xRadius: 4, yRadius: 4).fill()
-        (label as NSString).draw(at: CGPoint(x: box.minX + 6, y: box.minY + 3), withAttributes: attrs)
     }
 }
 

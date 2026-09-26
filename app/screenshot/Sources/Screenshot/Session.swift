@@ -106,12 +106,12 @@ final class Session {
     /// always flush a `needsDisplay` without a mouse event, so this draws now.
     func refresh() {
         bar?.refresh()
-        overlays.forEach { $0.contentView?.needsDisplay = true; $0.contentView?.display() }
+        redraw()
     }
 
     /// After a hover change: overlays only. Touching the bar on every mouse move made it flash.
     func redraw() {
-        overlays.forEach { $0.contentView?.needsDisplay = true }
+        overlays.forEach { $0.refreshLayers() }
     }
 
     func makeKey(_ overlay: Overlay) {
