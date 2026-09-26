@@ -7,6 +7,7 @@ struct WindowInfo {
     let id: CGWindowID
     let frame: CGRect        // AppKit global points
     let app: String
+    let title: String
 }
 
 /// ScreenCaptureKit, one frame at a time. Our own process is excluded from every display
@@ -88,7 +89,8 @@ enum Capture {
                   bounds.width > 32, bounds.height > 32
             else { return nil }
             return WindowInfo(id: id, frame: appKit(bounds, mainHeight: mainHeight),
-                              app: w[kCGWindowOwnerName as String] as? String ?? "")
+                              app: w[kCGWindowOwnerName as String] as? String ?? "",
+                              title: w[kCGWindowName as String] as? String ?? "")
         }
     }
 }
