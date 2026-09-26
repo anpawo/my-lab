@@ -53,18 +53,18 @@ final class App: NSObject, NSApplicationDelegate, NSMenuDelegate {
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         item.button?.image = NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "screenshot")
         let menu = NSMenu()
-        let capture = menu.addItem(withTitle: "Capturer…", action: #selector(capture), keyEquivalent: "5")
+        let capture = menu.addItem(withTitle: "Capture…", action: #selector(capture), keyEquivalent: "5")
         capture.keyEquivalentModifierMask = [.command, .shift]
         capture.target = self
-        let stop = menu.addItem(withTitle: "Arrêter l'enregistrement", action: #selector(stopRecording), keyEquivalent: "")
+        let stop = menu.addItem(withTitle: "Stop Recording", action: #selector(stopRecording), keyEquivalent: "")
         stop.target = self
         stop.isHidden = true
         stopItem = stop
-        let recentItem = menu.addItem(withTitle: "Récentes", action: nil, keyEquivalent: "")
+        let recentItem = menu.addItem(withTitle: "Recent", action: nil, keyEquivalent: "")
         recent.delegate = self
         recentItem.submenu = recent
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Quitter", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        menu.addItem(withTitle: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         item.menu = menu
         status = item
     }
@@ -72,7 +72,7 @@ final class App: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
         let urls = Output.recent()
-        if urls.isEmpty { menu.addItem(withTitle: "Aucune", action: nil, keyEquivalent: "") }
+        if urls.isEmpty { menu.addItem(withTitle: "None", action: nil, keyEquivalent: "") }
         for url in urls {
             let m = menu.addItem(withTitle: url.lastPathComponent, action: #selector(openRecent(_:)), keyEquivalent: "")
             m.target = self

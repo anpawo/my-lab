@@ -13,16 +13,27 @@ enum Output {
         return CGImageDestinationFinalize(dest) ? data as Data : nil
     }
 
-    /// Writes the file, copies it, keeps a copy in the history, and returns where it went.
+    /// Writes the file to every chosen folder, copies it, keeps a copy in the history, and
+    /// returns the first one.
     @MainActor
     static func save(_ image: CGImage, scale: CGFloat, kind: String = "Screenshot", app: String? = nil) throws -> URL {
         guard let png = png(image, scale: scale) else { throw CocoaError(.fileWriteUnknown) }
-        let folder = Settings.saves ? Settings.folder : Settings.history
-        let url = folder.appendingPathComponent(fileName(kind: kind, app: app, ext: "png"))
-        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-        try png.write(to: url)
+        let name = fileName(kind: kind, app: app, ext: "png")
+        var first: URL?
+        for folder in Settings.folders {
+            let url = folder.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            try png.write(to: url)
+            first = first ?? url
+        }
+        let url: URL
+        if let first { url = first; remember(url) } else {
+            url = Settings.history.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: Settings.history, withIntermediateDirectories: true)
+            try png.write(to: url)
+            prune()
+        }
         if Settings.copies { copy(png, url: url) }
-        if Settings.saves { remember(url) } else { prune() }
         return url
     }
 

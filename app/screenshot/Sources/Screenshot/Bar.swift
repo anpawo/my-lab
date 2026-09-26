@@ -100,7 +100,7 @@ final class Bar: NSPanel {
     func refresh() {
         let s = session.state
         for b in buttons { b.isSelected = b.mode == s }
-        let title = s.kind == .photo ? "Capture" : "Enregistrer"
+        let title = s.kind == .photo ? "Capture" : "Record"
         go.attributedTitle = NSAttributedString(string: title, attributes: [.foregroundColor: NSColor.white, .font: go.font!])
         go.isEnabled = !(s.needsSelection && session.selection == nil)
         go.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(go.isEnabled ? 1 : 0.4).cgColor
@@ -146,50 +146,49 @@ final class Bar: NSPanel {
         menu.popUp(positioning: nil, at: CGPoint(x: 0, y: options.bounds.height + 6), in: options)
     }
 
-    /// The system's three sections, filled with what this app actually does.
+    /// The system's three sections, filled with what this app actually does. Save targets
+    /// add up: several folders and the clipboard can all be on.
     private func optionsMenu() -> NSMenu {
         let menu = NSMenu()
         func header(_ t: String) { menu.addItem(withTitle: t, action: nil, keyEquivalent: "") }
-        func item(_ t: String, _ sel: Selector, on: Bool, tag: Int = 0) {
+        func item(_ t: String, _ sel: Selector, on: Bool, tag: Int = 0, object: Any? = nil) {
             let m = menu.addItem(withTitle: t, action: sel, keyEquivalent: "")
             m.target = self
             m.state = on ? .on : .off
             m.tag = tag
+            m.representedObject = object
             m.indentationLevel = 1
         }
-        header("Enregistrer dans")
+        header("Save to")
         let home = FileManager.default.homeDirectoryForCurrentUser
-        for (name, dir) in [("Bureau", home.appendingPathComponent("Desktop")),
-                            ("Téléchargements", home.appendingPathComponent("Downloads")),
-                            ("Documents", home.appendingPathComponent("Documents"))] {
-            item(name, #selector(setFolder(_:)), on: Settings.saves && Settings.folder.path == dir.path)
-            menu.items.last!.representedObject = dir
+        var known = [("Desktop", home.appendingPathComponent("Desktop")),
+                     ("Downloads", home.appendingPathComponent("Downloads")),
+                     ("Documents", home.appendingPathComponent("Documents"))]
+        for f in Settings.folders where !known.contains(where: { $0.1.path == f.path }) { known.append((f.lastPathComponent, f)) }
+        for (name, dir) in known {
+            item(name, #selector(toggleFolder(_:)), on: Settings.folders.contains { $0.path == dir.path }, object: dir)
         }
-        let custom = ![home.appendingPathComponent("Desktop"), home.appendingPathComponent("Downloads"),
-                       home.appendingPathComponent("Documents")].map(\.path).contains(Settings.folder.path)
-        if custom { item(Settings.folder.lastPathComponent, #selector(setFolder(_:)), on: Settings.saves)
-                    menu.items.last!.representedObject = Settings.folder }
-        item("Presse-papiers seulement", #selector(clipboardOnly), on: !Settings.saves)
-        item("Autre dossier…", #selector(pickFolder), on: false)
+        item("Clipboard", #selector(toggleCopy), on: Settings.copies)
+        item("Other Folder…", #selector(pickFolder), on: false)
         menu.addItem(.separator())
-        header("Minuteur")
-        for (t, secs) in [("Aucun", 0), ("5 secondes", 5), ("10 secondes", 10)] {
+        header("Timer")
+        for (t, secs) in [("None", 0), ("5 Seconds", 5), ("10 Seconds", 10)] {
             item(t, #selector(setTimer(_:)), on: Settings.timer == secs, tag: secs)
         }
         menu.addItem(.separator())
         header("Options")
-        item("Afficher la vignette", #selector(toggleThumbnail), on: Settings.thumbnail)
-        item("Copier dans le presse-papiers", #selector(toggleCopy), on: Settings.copies)
-        item("Afficher le pointeur", #selector(toggleCursor), on: Settings.cursor)
-        if session.state.kind == .video { item("Enregistrer le micro", #selector(toggleMic), on: Settings.microphone) }
+        item("Show Floating Thumbnail", #selector(toggleThumbnail), on: Settings.thumbnail)
+        item("Show Mouse Pointer", #selector(toggleCursor), on: Settings.cursor)
+        if session.state.kind == .video { item("Record Microphone", #selector(toggleMic), on: Settings.microphone) }
         return menu
     }
 
-    @objc private func setFolder(_ item: NSMenuItem) {
-        Settings.folder = item.representedObject as! URL
-        Settings.saves = true
+    @objc private func toggleFolder(_ item: NSMenuItem) {
+        let dir = item.representedObject as! URL
+        var folders = Settings.folders
+        if let i = folders.firstIndex(where: { $0.path == dir.path }) { folders.remove(at: i) } else { folders.append(dir) }
+        Settings.folders = folders
     }
-    @objc private func clipboardOnly() { Settings.saves = false; Settings.copies = true }
     @objc private func toggleThumbnail() { Settings.thumbnail.toggle() }
     @objc private func toggleCopy() { Settings.copies.toggle() }
 
@@ -207,7 +206,9 @@ final class Bar: NSPanel {
         panel.directoryURL = Settings.folder
         panel.level = level
         NSApp.activate()
-        if panel.runModal() == .OK, let url = panel.url { Settings.folder = url; Settings.saves = true }
+        if panel.runModal() == .OK, let url = panel.url, !Settings.folders.contains(where: { $0.path == url.path }) {
+            Settings.folders.append(url)
+        }
     }
 }
 
@@ -230,7 +231,7 @@ final class ModeButton: NSButton {
         isBordered = false
         imagePosition = .imageOnly
         contentTintColor = NSColor.labelColor.withAlphaComponent(0.7)
-        toolTip = Glyph.tip[state.target]! + (state.kind == .video ? " (vidéo)" : "")
+        toolTip = (state.kind == .video ? "Record " : "Capture ") + Glyph.tip[state.target]!
         wantsLayer = true
         layer?.cornerRadius = 8
     }
@@ -242,7 +243,7 @@ final class ModeButton: NSButton {
 /// 4.5 pt corners; a menu-bar line and a dock for the display, three dots for the window,
 /// dashes for the area; the recordings add a ring badge that punches through the corner.
 enum Glyph {
-    static let tip: [Target: String] = [.screen: "Écran entier", .window: "Fenêtre", .area: "Zone"]
+    static let tip: [Target: String] = [.screen: "Entire Screen", .window: "Selected Window", .area: "Selected Portion"]
 
     static func image(for s: BarState) -> NSImage {
         let recording = s.kind == .video

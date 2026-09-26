@@ -28,7 +28,7 @@ final class Pin: NSPanel {
         iv.imageScaling = .scaleProportionallyUpOrDown
         iv.autoresizingMask = [.width, .height]
         view.addSubview(iv)
-        close.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Fermer")
+        close.image = NSImage(systemSymbolName: "xmark.circle.fill", accessibilityDescription: "Close")
         close.isBordered = false
         close.frame = CGRect(x: 4, y: rect.height - 24, width: 20, height: 20)
         close.target = self
