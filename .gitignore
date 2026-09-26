@@ -9,3 +9,4 @@ dist/
 *.key
 *.p12
 .env
+CLAUDE.md
