@@ -153,13 +153,23 @@ private final class OverlayView: NSView {
         // The whole screen stays a little dark while the bar is up, whatever the mouse does, so
         // it reads as "capturing". What the click would take gets a lighter tint and an outline;
         // only the area selection shows through at full brightness.
-        NSColor(white: 0, alpha: 0.3).setFill()
+        NSColor(white: 0, alpha: 0.45).setFill()
         bounds.fill()
         switch session.state.target {
         case .screen:
-            if session.hoverScreen == screen { highlight(bounds.insetBy(dx: 2, dy: 2), label: pixels(bounds)) }
+            // The screen under the mouse is the one a click takes: lighter, no frame.
+            if session.hoverScreen == screen { NSColor(white: 1, alpha: 0.1).setFill(); bounds.fill() }
         case .window:
-            if let w = session.hoverWindow { highlight(local(w.frame), label: "\(w.app)  \(pixels(w.frame))") }
+            if let w = session.hoverWindow {
+                let r = local(w.frame)
+                NSColor(white: 1, alpha: 0.12).setFill()
+                r.fill()
+                let frame = NSBezierPath(roundedRect: r.insetBy(dx: 1, dy: 1), xRadius: 10, yRadius: 10)
+                frame.lineWidth = 2
+                NSColor.white.setStroke()
+                frame.stroke()
+                label("\(w.app)  \(pixels(w.frame))", below: r)
+            }
         case .area:
             guard let sel = session.selection, screen.frame.contains(sel) else { return }
             let r = local(sel)
@@ -178,17 +188,15 @@ private final class OverlayView: NSView {
         return "\(Int(r.width * s)) × \(Int(r.height * s))"
     }
 
-    private func highlight(_ r: CGRect, label: String) {
-        NSColor(white: 1, alpha: 0.12).setFill()
-        r.fill()
-        outline(r, label: label)
-    }
-
-    private func outline(_ r: CGRect, label: String) {
+    private func outline(_ r: CGRect, label text: String) {
         NSColor.white.setStroke()
         let path = NSBezierPath(rect: r.insetBy(dx: -0.5, dy: -0.5))
         path.lineWidth = 1
         path.stroke()
+        label(text, below: r)
+    }
+
+    private func label(_ label: String, below r: CGRect) {
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium), .foregroundColor: NSColor.white,
         ]
