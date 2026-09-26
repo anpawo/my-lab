@@ -1,8 +1,9 @@
 # claude-code
 
 How my Claude Code looks and behaves. Everything here was measured against Claude Code
-2.1.282 (native install, macOS). Minified names inside the binary move between releases, so
-the patcher is the one piece that may need re-finding its anchors after an update.
+2.1.282 and 2.1.283 (native install, macOS). Minified names inside the binary move between
+releases, so the patcher finds its sites with regexes anchored on string literals, and a
+`SessionStart` hook re-applies it after every auto-update.
 
 | Piece | Goes to | What it does |
 |---|---|---|
@@ -13,6 +14,7 @@ the patcher is the one piece that may need re-finding its anchors after an updat
 | `trust-folders.py` | `~/.claude/` | Seeds the "do you trust this folder" flag for `$HOME` and every git repo under it, from `SessionStart`, so a fresh clone never prompts. |
 | `hooks/context-guard.py` | `~/.claude/hooks/` | `UserPromptSubmit` hook: one reminder at 100k, 200k, 400k… tokens that attention degrades past 100k, whatever the window size. |
 | `hooks/session-start-memory.py` | `~/.claude/hooks/` | `SessionStart` hook: loads the memory index into context. |
+| `hooks/patch-check.sh` | `~/.claude/hooks/` | `SessionStart` hook: if the running binary (`$CLAUDE_CODE_EXECPATH`) has lost the patch to an auto-update, re-applies `bullet-band.py` and tells Claude to ask for a restart. |
 | `skills/`, `commands/` | `~/.claude/skills/`, `~/.claude/commands/` | `table` (project status as one icon table), `ck` (commit, push, kill the session and its tab), `ww` (re-explain the last answer), `swift-macos` and `android-room-gradle` (verified toolchain traps). |
 | `settings.excerpt.json` | merge into `~/.claude/settings.json` | The `statusLine`, `hooks` and `theme` keys that wire the above. |
 
@@ -55,9 +57,13 @@ patched, and the interesting part is how, because none of it is documented:
    Re-signed ad hoc with `codesign -s - -f --preserve-metadata=entitlements,flags`, because
    the `allow-jit` entitlement has to survive.
 
-`bullet-band.py <binary>` does all of it, keeps `<binary>.orig`, is idempotent, and stops if any
-anchor is not found exactly once. Revert: `mv <v>.orig <v>`. After an update: run it again on the
-new version file and expect to re-find the anchors.
+`bullet-band.py <binary>` does all of it, keeps `<binary>.orig`, is idempotent (`--check` exits 0
+when already patched), and stops if a site is not matched exactly the expected number of times.
+Every site is a regex anchored on string literals (`"aria-label":"claude:"`, `"pasting-message"`,
+`rule:"first-entry"`…) that captures the minified names it needs, so the same script took
+2.1.282 → 2.1.283 unchanged. Two traps: identifiers are reused across chunks (a lookup for the
+footer's `Box` must stay inside the footer's chunk), and two sites can be byte-identical (splice
+by absolute offset, not by `bytes.replace`). Revert: `mv <v>.orig <v>`.
 
 What it changes, each one a same-length or comment-reclaimed edit:
 
