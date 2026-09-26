@@ -3,7 +3,7 @@ import ScreenshotCore
 
 /// The ⌘⇧5 strip, laid out like the system's: ✕, the stills, the recordings, Options, the
 /// button. Never key: keys go to the overlay.
-final class Bar: NSPanel {
+final class Bar: NSPanel, NSMenuDelegate {
     // Apple's geometry, measured on the system bar at 2×: 53 pt tall, ✕ at 14.5, stills on a
     // 50 pt pitch in 44×36 buttons, recordings on a 59.25 pt pitch in 53-wide ones, dividers
     // 10 and 7 pt after the groups, Options 17.5 pt after, the button 15 pt after that.
@@ -143,8 +143,12 @@ final class Bar: NSPanel {
 
     @objc private func showOptions() {
         let menu = optionsMenu()
+        menu.delegate = self
         menu.popUp(positioning: nil, at: CGPoint(x: 0, y: options.bounds.height + 6), in: options)
     }
+
+    func menuWillOpen(_ menu: NSMenu) { session.unregisterChords() }
+    func menuDidClose(_ menu: NSMenu) { session.registerChords() }
 
     /// The system's three sections, filled with what this app actually does. Save targets
     /// add up: several folders and the clipboard can all be on.

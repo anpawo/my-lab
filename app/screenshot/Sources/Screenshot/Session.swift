@@ -72,16 +72,25 @@ final class Session {
             bar = Bar(session: self, on: under)
             bar?.orderFrontRegardless()
             refresh()
-            // Escape and Return as system-wide chords while the overlay is up: a non-activating
-            // panel does not always get key events, and these two must never depend on it.
-            HotKey.register(key: kVK_Escape, modifiers: 0, id: 2) { Task { @MainActor in Session.shared.close() } }
-            HotKey.register(key: kVK_Return, modifiers: 0, id: 3) { Task { @MainActor in Session.shared.commit() } }
+            registerChords()
         }
     }
 
-    func close() {
+    /// Escape and Return as system-wide chords while the overlay is up: a non-activating panel
+    /// does not always get key events, and these two must never depend on it. Suspended while
+    /// the Options menu is open, so Escape closes the menu instead of the session.
+    func registerChords() {
+        HotKey.register(key: kVK_Escape, modifiers: 0, id: 2) { Task { @MainActor in Session.shared.close() } }
+        HotKey.register(key: kVK_Return, modifiers: 0, id: 3) { Task { @MainActor in Session.shared.commit() } }
+    }
+
+    func unregisterChords() {
         HotKey.unregister(id: 2)
         HotKey.unregister(id: 3)
+    }
+
+    func close() {
+        unregisterChords()
         overlays.forEach { $0.orderOut(nil) }
         overlays = []
         bar?.orderOut(nil)
