@@ -181,8 +181,8 @@ private final class OverlayView: NSView {
     /// Called by the session after any hover or state change.
     func update() {
         let target = session.state.target
-        // One veil, every mode: what the click would take is cut out of it and framed in white —
-        // the whole hovered screen, the hovered window, or the selection.
+        // One veil, every mode, framed in white on what the click would take. The window and the
+        // selection are cut out of it; a whole screen stays veiled, or nothing would look dark.
         var cut: CGRect?
         var text: String?
         switch target {
@@ -199,7 +199,7 @@ private final class OverlayView: NSView {
         CATransaction.setDisableActions(true)
         let path = CGMutablePath()
         path.addRect(bounds)
-        if let cut { path.addRect(cut) }
+        if let cut, target != .screen { path.addRect(cut) }
         hole.path = path
         if let cut {
             frameLayer.lineWidth = rounded ? 2 : 1
