@@ -30,15 +30,13 @@ expect(resized(r, handle: 0, to: CGPoint(x: 50, y: 50)) == CGRect(x: 30, y: 30, 
 expect(resized(r, handle: 3, to: CGPoint(x: 70, y: 0)) == CGRect(x: 10, y: 10, width: 60, height: 20),
        "an edge handle ignores the other axis")
 
-var bar = BarState(target: .text, kind: .photo)
+var bar = BarState(target: .area, kind: .photo)
 bar.step(1); expect(bar == BarState(target: .screen, kind: .video), "⌘→ goes from the last still to the first recording")
-bar.step(-1); expect(bar == BarState(target: .text, kind: .photo), "⌘← comes back")
+bar.step(-1); expect(bar == BarState(target: .area, kind: .photo), "⌘← comes back")
 bar = BarState(target: .area, kind: .video)
 bar.step(1); expect(bar == BarState(target: .screen, kind: .photo), "⌘→ wraps around")
-bar.toggleKind(); expect(bar.kind == .video && bar.target == .screen, "⌘⇧5 keeps the target when it exists in video")
-bar = BarState(target: .text, kind: .photo)
-bar.toggleKind(); expect(bar.kind == .video && bar.target == .area, "video drops text and falls back to area")
-expect(BarState.all.count == 7, "seven buttons")
+bar.toggleKind(); expect(bar.kind == .video && bar.target == .screen, "⌘⇧5 keeps the target")
+expect(BarState.all.count == 6, "six buttons, like the system")
 
 let name = fileName(kind: "Screenshot", app: "Safari/Beta", ext: "png", at: Date(timeIntervalSince1970: 0))
 expect(name.hasPrefix("Screenshot Safari-Beta 1970-01-01 at ") && name.hasSuffix(".png"), "file name: \(name)")

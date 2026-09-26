@@ -84,7 +84,7 @@ private final class OverlayView: NSView {
         case .screen: session.commit(screen: screen)
         case .window:
             if let w = session.windows.first(where: { $0.frame.contains(p) }) { session.commit(window: w) }
-        case .area, .text:
+        case .area:
             if let r = session.selection {
                 if let i = (0..<8).first(where: { handlePoint(r, $0).distance(to: p) < 8 }) { drag = .resize(i); return }
                 if r.contains(p) { drag = .move(CGPoint(x: p.x - r.minX, y: p.y - r.minY)); return }
@@ -121,10 +121,10 @@ private final class OverlayView: NSView {
     private func cursor(at p: CGPoint) -> NSCursor {
         guard session.state.needsSelection else { return .camera }
         if let r = session.selection {
-            if (0..<8).contains(where: { handlePoint(r, $0).distance(to: p) < 8 }) { return .crosshair }
+            if (0..<8).contains(where: { handlePoint(r, $0).distance(to: p) < 8 }) { return .selection }
             if r.contains(p) { return .openHand }
         }
-        return .crosshair
+        return .selection
     }
 
     // MARK: Keyboard
@@ -150,22 +150,17 @@ private final class OverlayView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         image.draw(in: bounds)
-        // The whole screen goes a little dark while the bar is up, so it reads as "capturing";
-        // the part that will end up in the picture stays at full brightness.
-        let dim = NSColor(white: 0, alpha: session.state.needsSelection ? 0.35 : 0.25)
+        // The whole screen stays a little dark while the bar is up, whatever the mouse does, so
+        // it reads as "capturing". What the click would take gets a lighter tint and an outline;
+        // only the area selection shows through at full brightness.
+        NSColor(white: 0, alpha: 0.3).setFill()
+        bounds.fill()
         switch session.state.target {
         case .screen:
-            if session.hoverScreen != screen { dim.setFill(); bounds.fill() }
-            else { outline(bounds.insetBy(dx: 2, dy: 2), label: "\(pixels(bounds))") }
+            if session.hoverScreen == screen { highlight(bounds.insetBy(dx: 2, dy: 2), label: pixels(bounds)) }
         case .window:
-            dim.setFill(); bounds.fill()
-            if let w = session.hoverWindow {
-                let r = local(w.frame)
-                image.draw(in: r, from: r, operation: .copy, fraction: 1)
-                outline(r, label: "\(w.app)  \(pixels(r))")
-            }
-        case .area, .text:
-            dim.setFill(); bounds.fill()
+            if let w = session.hoverWindow { highlight(local(w.frame), label: "\(w.app)  \(pixels(w.frame))") }
+        case .area:
             guard let sel = session.selection, screen.frame.contains(sel) else { return }
             let r = local(sel)
             image.draw(in: r, from: r, operation: .copy, fraction: 1)
@@ -181,6 +176,12 @@ private final class OverlayView: NSView {
     private func pixels(_ r: CGRect) -> String {
         let s = screen.backingScaleFactor
         return "\(Int(r.width * s)) × \(Int(r.height * s))"
+    }
+
+    private func highlight(_ r: CGRect, label: String) {
+        NSColor(white: 1, alpha: 0.12).setFill()
+        r.fill()
+        outline(r, label: label)
     }
 
     private func outline(_ r: CGRect, label: String) {
@@ -206,26 +207,24 @@ extension CGPoint {
 }
 
 extension NSCursor {
-    /// The camera the system shows for screen and window picks: a white symbol with a dark rim.
-    static let camera: NSCursor = {
-        let size = CGSize(width: 30, height: 30)
-        let img = NSImage(size: size, flipped: false) { _ in
-            let sym = NSImage(systemSymbolName: "camera.fill", accessibilityDescription: nil)!
-                .withSymbolConfiguration(.init(pointSize: 22, weight: .medium))!
-            let white = NSImage(size: sym.size, flipped: false) { _ in
-                sym.draw(in: CGRect(origin: .zero, size: sym.size))
-                NSColor.white.set()
-                CGRect(origin: .zero, size: sym.size).fill(using: .sourceAtop)
-                return true
-            }
+    /// The system's own screenshot cursors, straight from HIServices: the camera for screen and
+    /// window picks, the ringed cross for the area. Their plists give the hotspots and a soft
+    /// shadow, applied here since the PDFs carry none.
+    static let camera = system("screenshotwindow", hotSpot: CGPoint(x: 14, y: 11)) ?? .arrow
+    static let selection = system("screenshotselection", hotSpot: CGPoint(x: 15, y: 15)) ?? .crosshair
+
+    private static func system(_ name: String, hotSpot: CGPoint) -> NSCursor? {
+        let base = "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/"
+        guard let pdf = NSImage(contentsOfFile: base + name + "/cursor.pdf") else { return nil }
+        let img = NSImage(size: pdf.size, flipped: false) { r in
             let shadow = NSShadow()
-            shadow.shadowColor = NSColor.black.withAlphaComponent(0.9)
-            shadow.shadowBlurRadius = 2.5
+            shadow.shadowColor = NSColor.black.withAlphaComponent(0.45)
+            shadow.shadowOffset = CGSize(width: 0, height: -1)
+            shadow.shadowBlurRadius = 2
             shadow.set()
-            white.draw(in: CGRect(x: (size.width - sym.size.width) / 2, y: (size.height - sym.size.height) / 2,
-                                  width: sym.size.width, height: sym.size.height))
+            pdf.draw(in: r)
             return true
         }
-        return NSCursor(image: img, hotSpot: CGPoint(x: 15, y: 15))
-    }()
+        return NSCursor(image: img, hotSpot: hotSpot)
+    }
 }
