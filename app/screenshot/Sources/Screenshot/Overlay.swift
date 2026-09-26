@@ -181,8 +181,8 @@ private final class OverlayView: NSView {
     /// Called by the session after any hover or state change.
     func update() {
         let target = session.state.target
-        // Screen and window look alike: no veil, a white frame on what the click would take.
-        // The area keeps its veil, since the picture is the part that shows through it.
+        // One veil, every mode: what the click would take is cut out of it and framed in white —
+        // the whole hovered screen, the hovered window, or the selection.
         var cut: CGRect?
         var text: String?
         switch target {
@@ -197,7 +197,6 @@ private final class OverlayView: NSView {
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        veil.opacity = target == .area ? 0.45 : 0
         let path = CGMutablePath()
         path.addRect(bounds)
         if let cut { path.addRect(cut) }
