@@ -78,7 +78,7 @@ final class Bar: NSPanel {
 
         // Painted by hand: AppKit only tints a default button in a key window, and this one never is.
         go.isBordered = false
-        go.font = .systemFont(ofSize: 15, weight: .semibold)
+        go.font = .systemFont(ofSize: 15, weight: .medium)
         go.wantsLayer = true
         go.layer?.cornerRadius = 8
         go.target = self
