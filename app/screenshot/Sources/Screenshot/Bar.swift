@@ -100,7 +100,7 @@ final class Bar: NSPanel {
     func refresh() {
         let s = session.state
         for b in buttons { b.isSelected = b.mode == s }
-        let title = s.kind == .photo ? "Capturer" : "Enregistrer"
+        let title = s.kind == .photo ? "Capture" : "Enregistrer"
         go.attributedTitle = NSAttributedString(string: title, attributes: [.foregroundColor: NSColor.white, .font: go.font!])
         go.isEnabled = !(s.needsSelection && session.selection == nil)
         go.layer?.backgroundColor = NSColor.controlAccentColor.withAlphaComponent(go.isEnabled ? 1 : 0.4).cgColor

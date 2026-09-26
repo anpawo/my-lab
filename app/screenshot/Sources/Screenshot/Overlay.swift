@@ -73,9 +73,9 @@ private final class OverlayView: NSView {
         handleDots.fillColor = NSColor(white: 0.5, alpha: 1).cgColor
         labelBack.backgroundColor = NSColor(white: 0, alpha: 0.7).cgColor
         labelBack.cornerRadius = 4
-        label.fontSize = 11
-        label.font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .medium)
-        label.foregroundColor = NSColor.white.cgColor
+        label.fontSize = 10
+        label.font = NSFont.monospacedDigitSystemFont(ofSize: 10, weight: .regular)
+        label.foregroundColor = NSColor(white: 1, alpha: 0.75).cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
         for l in [veil, frameBase, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
