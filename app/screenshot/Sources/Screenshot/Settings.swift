@@ -5,10 +5,13 @@ import ScreenshotCore
 enum Settings {
     private static let d = UserDefaults.standard
 
-    static var folder: URL {
-        get { URL(fileURLWithPath: ((d.string(forKey: "folder") ?? "~/Desktop") as NSString).expandingTildeInPath) }
-        set { d.set(newValue.path, forKey: "folder") }
+    /// Every folder a capture is written to; several at once is fine. Empty means the
+    /// clipboard only (the file then lives in the history folder).
+    static var folders: [URL] {
+        get { (d.stringArray(forKey: "folders") ?? ["~/Desktop"]).map { URL(fileURLWithPath: ($0 as NSString).expandingTildeInPath) } }
+        set { d.set(newValue.map(\.path), forKey: "folders") }
     }
+    static var folder: URL { folders.first ?? history }
     /// Seconds before a timed capture; 0 is immediate.
     static var timer: Int {
         get { d.integer(forKey: "timer") }
@@ -17,11 +20,6 @@ enum Settings {
     static var cursor: Bool {
         get { d.bool(forKey: "cursor") }
         set { d.set(newValue, forKey: "cursor") }
-    }
-    /// Off means the clipboard only: the file goes to the history folder, not the Desktop.
-    static var saves: Bool {
-        get { d.object(forKey: "save") as? Bool ?? true }
-        set { d.set(newValue, forKey: "save") }
     }
     static var copies: Bool {
         get { d.object(forKey: "copy") as? Bool ?? true }

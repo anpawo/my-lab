@@ -206,6 +206,9 @@ final class Session {
         onRecordingChange?(nil)
         Task {
             guard let url = await recorder.stop() else { return }
+            for f in Settings.folders.dropFirst() {
+                try? FileManager.default.copyItem(at: url, to: f.appendingPathComponent(url.lastPathComponent))
+            }
             Output.remember(url)
             let gen = AVAssetImageGenerator(asset: AVURLAsset(url: url))
             gen.appliesPreferredTrackTransform = true

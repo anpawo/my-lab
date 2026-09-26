@@ -52,10 +52,10 @@ final class Thumbnail: NSPanel {
             iv.autoresizingMask = [.width, .height]
             view.addSubview(iv)
         case .movie(nil, _):
-            view.addSubview(label("Enregistrement", in: view.bounds))
+            view.addSubview(label("Recording", in: view.bounds))
         }
         if case .image = content {
-            for (symbol, action, tip) in [("pin", #selector(pin), "Épingler"), ("trash", #selector(trash), "Supprimer")] {
+            for (symbol, action, tip) in [("pin", #selector(pin), "Pin"), ("trash", #selector(trash), "Delete")] {
                 let b = NSButton(image: NSImage(systemSymbolName: symbol, accessibilityDescription: tip)!, target: self, action: action)
                 b.bezelStyle = .circular
                 b.toolTip = tip
