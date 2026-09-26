@@ -1,61 +1,62 @@
 import AppKit
 
-/// A capture floating where it was taken, above everything, on every Space. Drag to move,
-/// scroll for opacity, Escape or the corner cross to close. No timeout: it stays until you say.
-final class Pin: NSPanel {
+/// A capture kept in the top-right corner, thumbnail-sized, until closed. Pins stack downward
+/// and the next thumbnails appear under them. A click offers Copy, Open, Close.
+final class Pin: NSPanel, NSMenuDelegate {
     private static var pins: [Pin] = []
+    private let url: URL
 
-    static func show(_ image: CGImage, at rect: CGRect) {
-        pins.append(Pin(image, at: rect))
+    static func show(_ image: CGImage, url: URL) {
+        pins.append(Pin(image, url: url))
     }
 
-    private let close = NSButton()
+    /// Where the stack ends on this screen: the next card goes below it.
+    static func stackBottom(on screen: NSScreen) -> CGFloat {
+        pins.filter { $0.screen == screen }.map(\.frame.minY).min() ?? screen.visibleFrame.maxY
+    }
 
-    private init(_ image: CGImage, at rect: CGRect) {
-        super.init(contentRect: rect, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+    private init(_ image: CGImage, url: URL) {
+        self.url = url
+        let s = NSScreen.underMouse
+        let width = (s.visibleFrame.width / 10).rounded()
+        let height = (width * CGFloat(image.height) / CGFloat(image.width)).rounded()
+        super.init(contentRect: CGRect(x: 0, y: 0, width: width, height: height),
+                   styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = .floating
         isOpaque = false
         backgroundColor = .clear
         hasShadow = true
-        isMovableByWindowBackground = true
         hidesOnDeactivate = false
         isReleasedWhenClosed = false
+        sharingType = .none
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-        let view = PinView(frame: CGRect(origin: .zero, size: rect.size), pin: self)
+        let view = PinView(frame: CGRect(origin: .zero, size: frame.size), pin: self)
         let iv = NSImageView(frame: view.bounds)
-        iv.image = NSImage(cgImage: image, size: rect.size)
+        iv.image = NSImage(cgImage: image, size: view.bounds.size)
         iv.imageScaling = .scaleProportionallyUpOrDown
         iv.autoresizingMask = [.width, .height]
         view.addSubview(iv)
-        close.image = NSImage(systemSymbolName: "xmark", accessibilityDescription: "Close")
-        close.isBordered = false
-        close.imagePosition = .imageOnly
-        close.contentTintColor = .white
-        close.wantsLayer = true
-        close.layer?.backgroundColor = NSColor(white: 0, alpha: 0.65).cgColor
-        close.layer?.cornerRadius = 11
-        close.frame = CGRect(x: 6, y: rect.height - 28, width: 22, height: 22)
-        close.target = self
-        close.action = #selector(dismiss)
-        close.isHidden = true
-        view.addSubview(close)
         contentView = view
+        setFrameOrigin(CGPoint(x: s.visibleFrame.maxX - width - 16, y: Pin.stackBottom(on: s) - height - 16))
         orderFrontRegardless()
     }
 
-    override var canBecomeKey: Bool { true }
+    override var canBecomeKey: Bool { false }
 
-    func hover(_ on: Bool) { close.isHidden = !on }
-
-    override func scrollWheel(with event: NSEvent) {
-        alphaValue = min(1, max(0.15, alphaValue + event.scrollingDeltaY / 100))
+    func menu(at point: CGPoint) {
+        let menu = NSMenu()
+        for (title, sel) in [("Copy", #selector(copyImage)), ("Open", #selector(open)), ("Close", #selector(dismiss))] {
+            let m = menu.addItem(withTitle: title, action: sel, keyEquivalent: "")
+            m.target = self
+        }
+        menu.popUp(positioning: nil, at: point, in: contentView)
     }
 
-    override func keyDown(with event: NSEvent) {
-        if event.keyCode == 53 { dismiss() }
+    @objc private func copyImage() {
+        if let png = try? Data(contentsOf: url) { Output.copy(png, url: url) }
     }
-
+    @objc private func open() { NSWorkspace.shared.open(url) }
     @objc func dismiss() {
         orderOut(nil)
         Pin.pins.removeAll { $0 === self }
@@ -67,14 +68,13 @@ final class Pin: NSPanel {
             self.pin = pin
             super.init(frame: frame)
             wantsLayer = true
-            layer?.borderColor = NSColor.white.withAlphaComponent(0.6).cgColor
-            layer?.borderWidth = 1
-            addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+            layer?.cornerRadius = 8
+            layer?.masksToBounds = true
+            layer?.borderColor = NSColor.white.withAlphaComponent(0.8).cgColor
+            layer?.borderWidth = 2
         }
         required init?(coder: NSCoder) { nil }
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-        override func mouseEntered(with event: NSEvent) { pin.hover(true) }
-        override func mouseExited(with event: NSEvent) { pin.hover(false) }
-        override func mouseDown(with event: NSEvent) { pin.makeKey(); super.mouseDown(with: event) }
+        override func mouseDown(with event: NSEvent) { pin.menu(at: convert(event.locationInWindow, from: nil)) }
     }
 }
