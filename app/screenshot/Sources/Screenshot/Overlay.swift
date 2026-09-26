@@ -36,6 +36,25 @@ private final class OverlayView: NSView {
     private unowned let session: Session
     private enum Drag { case none, new(CGPoint), move(CGPoint), resize(Int) }
     private var drag = Drag.none
+    // The veil over this screen; in screen mode it fades between the two values on hover.
+    private var veil: CGFloat = 0.45
+    private var veilTarget: CGFloat = 0.45
+    private var fade: Timer?
+
+    private func fadeVeil(to target: CGFloat) {
+        guard target != veilTarget else { return }
+        veilTarget = target
+        fade?.invalidate()
+        let from = veil, start = Date()
+        fade = Timer.scheduledTimer(withTimeInterval: 1 / 60, repeats: true) { [weak self] t in
+            guard let self else { t.invalidate(); return }
+            let k = min(1, Date().timeIntervalSince(start) / 0.2)
+            self.veil = from + (target - from) * CGFloat(k)
+            self.needsDisplay = true
+            self.display()
+            if k >= 1 { t.invalidate() }
+        }
+    }
 
     init(screen: NSScreen, frozen: CGImage, session: Session) {
         self.display = screen
@@ -153,17 +172,22 @@ private final class OverlayView: NSView {
         // The whole screen stays a little dark while the bar is up, whatever the mouse does, so
         // it reads as "capturing". What the click would take gets a lighter tint and an outline;
         // only the area selection shows through at full brightness.
-        NSColor(white: 0, alpha: 0.45).setFill()
+        if session.state.target == .screen {
+            // The screen under the mouse is the one a click takes: its veil fades away.
+            fadeVeil(to: session.hoverScreen == screen ? 0.08 : 0.45)
+        } else {
+            veil = 0.45
+            veilTarget = 0.45
+        }
+        NSColor(white: 0, alpha: veil).setFill()
         bounds.fill()
         switch session.state.target {
-        case .screen:
-            // The screen under the mouse is the one a click takes: lighter, no frame.
-            if session.hoverScreen == screen { NSColor(white: 1, alpha: 0.1).setFill(); bounds.fill() }
+        case .screen: break
         case .window:
+            // Only the hovered window shows through the veil.
             if let w = session.hoverWindow {
                 let r = local(w.frame)
-                NSColor(white: 1, alpha: 0.12).setFill()
-                r.fill()
+                image.draw(in: r, from: r, operation: .copy, fraction: 1)
                 let frame = NSBezierPath(roundedRect: r.insetBy(dx: 1, dy: 1), xRadius: 10, yRadius: 10)
                 frame.lineWidth = 2
                 NSColor.white.setStroke()

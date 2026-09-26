@@ -18,6 +18,19 @@ enum Settings {
         get { d.bool(forKey: "cursor") }
         set { d.set(newValue, forKey: "cursor") }
     }
+    /// Off means the clipboard only: the file goes to the history folder, not the Desktop.
+    static var saves: Bool {
+        get { d.object(forKey: "save") as? Bool ?? true }
+        set { d.set(newValue, forKey: "save") }
+    }
+    static var copies: Bool {
+        get { d.object(forKey: "copy") as? Bool ?? true }
+        set { d.set(newValue, forKey: "copy") }
+    }
+    static var thumbnail: Bool {
+        get { d.object(forKey: "thumbnail") as? Bool ?? true }
+        set { d.set(newValue, forKey: "thumbnail") }
+    }
     static var microphone: Bool {
         get { d.bool(forKey: "microphone") }
         set { d.set(newValue, forKey: "microphone") }
