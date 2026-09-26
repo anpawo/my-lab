@@ -35,11 +35,6 @@ enum Output {
         NSPasteboard.general.writeObjects([item])
     }
 
-    static func copy(text: String) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
-    }
-
     /// A copy under Application Support, the newest 20 only: the menu bar's "Récentes".
     static func remember(_ url: URL) {
         let fm = FileManager.default

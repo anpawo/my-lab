@@ -10,7 +10,7 @@ final class Session {
     static let shared = Session()
 
     var state = Settings.bar
-    /// AppKit global points; only for area and text.
+    /// AppKit global points; only for area.
     var selection: CGRect? = Settings.lastRect
     var hoverWindow: WindowInfo?
     var hoverScreen: NSScreen?
@@ -149,18 +149,12 @@ final class Session {
                     let image = try await Capture.window(w, shadow: shadow)
                     let url = try Output.save(image, scale: NSScreen.containing(w.frame).backingScaleFactor, app: w.app)
                     Thumbnail.show(.image(image, url, w.frame))
-                case .area, .text:
+                case .area:
                     let r = selection!.integral
                     let s = NSScreen.containing(r)
                     let image = live ? try await Capture.area(r, on: s)
                         : frozen[s.displayID]!.cropping(to: pixelCrop(r, in: s.frame, scale: s.backingScaleFactor))!
-                    if state.target == .area {
-                        Thumbnail.show(.image(image, try Output.save(image, scale: s.backingScaleFactor), r))
-                    } else {
-                        let text = try await OCR.text(in: image)
-                        Output.copy(text: text)
-                        Thumbnail.show(.text(text))
-                    }
+                    Thumbnail.show(.image(image, try Output.save(image, scale: s.backingScaleFactor), r))
                 }
             } catch {
                 NSLog("screenshot: \(error.localizedDescription)")
@@ -183,7 +177,7 @@ final class Session {
                     guard let w = window, let sc = try await Capture.content().windows.first(where: { $0.windowID == w.id }) else { return }
                     let filter = SCContentFilter(desktopIndependentWindow: sc)
                     try await recorder.start(filter: filter, size: filter.contentRect.size, scale: CGFloat(filter.pointPixelScale))
-                case .area, .text:
+                case .area:
                     let r = rect!.integral
                     let s = NSScreen.containing(r)
                     let (_, filter) = try await Capture.displayFilter(s)

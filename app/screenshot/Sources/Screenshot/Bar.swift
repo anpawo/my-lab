@@ -213,7 +213,7 @@ final class ModeButton: NSButton {
 /// 4.5 pt corners; a menu-bar line and a dock for the display, three dots for the window,
 /// dashes for the area; the recordings add a ring badge that punches through the corner.
 enum Glyph {
-    static let tip: [Target: String] = [.screen: "Écran entier", .window: "Fenêtre", .area: "Zone", .text: "Texte"]
+    static let tip: [Target: String] = [.screen: "Écran entier", .window: "Fenêtre", .area: "Zone"]
 
     static func image(for s: BarState) -> NSImage {
         let recording = s.kind == .video
@@ -227,7 +227,7 @@ enum Glyph {
             switch s.target {
             case .screen, .window:
                 stroke.appendRoundedRect(r, xRadius: radius, yRadius: radius)
-            case .area, .text:
+            case .area:
                 // Solid corners, two dashes on the long edges, one on the short ones.
                 dashedRoundedRect(r, radius: radius, into: stroke)
             }
@@ -241,9 +241,6 @@ enum Glyph {
                 NSBezierPath(roundedRect: CGRect(x: 6, y: 14.5, width: 17.5, height: 3.5), xRadius: 1.75, yRadius: 1.75).fill()
             case .window:
                 for i in 0..<3 { NSBezierPath(ovalIn: CGRect(x: 4.2 + CGFloat(i) * 3.4, y: 4.2, width: 2.2, height: 2.2)).fill() }
-            case .text:
-                ("T" as NSString).draw(at: CGPoint(x: 10, y: 4.5), withAttributes: [
-                    .font: NSFont.systemFont(ofSize: 12, weight: .bold), .foregroundColor: NSColor.black])
             case .area: break
             }
             if recording {

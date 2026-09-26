@@ -1,15 +1,15 @@
 import Foundation
 
 public enum Target: String, CaseIterable, Codable {
-    case screen, window, area, text
+    case screen, window, area
 }
 
 public enum Kind: String, Codable {
     case photo, video
 }
 
-/// What the bar offers and how ⌘← ⌘→ and ⌘⇧5 move through it. Seven buttons, like the
-/// system's six: four stills, then three recordings.
+/// What the bar offers and how ⌘← ⌘→ and ⌘⇧5 move through it. The system's six buttons:
+/// three stills, then three recordings.
 public struct BarState: Equatable {
     public var target: Target
     public var kind: Kind
@@ -19,10 +19,7 @@ public struct BarState: Equatable {
         self.kind = kind
     }
 
-    /// Text recognition has no meaning for a movie.
-    public static func targets(for kind: Kind) -> [Target] {
-        kind == .video ? [.screen, .window, .area] : Target.allCases
-    }
+    public static func targets(for kind: Kind) -> [Target] { Target.allCases }
 
     /// Every button, left to right.
     public static let all: [BarState] =
@@ -36,9 +33,8 @@ public struct BarState: Equatable {
 
     public mutating func toggleKind() {
         kind = kind == .photo ? .video : .photo
-        if !Self.targets(for: kind).contains(target) { target = .area }
     }
 
     /// Whether this target needs a rectangle before it can commit.
-    public var needsSelection: Bool { target == .area || target == .text }
+    public var needsSelection: Bool { target == .area }
 }

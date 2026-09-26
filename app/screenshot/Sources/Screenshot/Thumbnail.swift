@@ -7,7 +7,6 @@ final class Thumbnail: NSPanel {
     enum Content {
         case image(CGImage, URL, CGRect)
         case movie(CGImage?, URL)
-        case text(String)
     }
 
     private static var current: Thumbnail?
@@ -47,10 +46,6 @@ final class Thumbnail: NSPanel {
             view.addSubview(iv)
         case .movie(nil, _):
             view.addSubview(label("Enregistrement", in: view.bounds))
-        case .text(let text):
-            let t = label(text.isEmpty ? "Aucun texte reconnu" : text, in: view.bounds.insetBy(dx: 10, dy: 10))
-            t.font = .systemFont(ofSize: 11)
-            view.addSubview(t)
         }
         if case .image = content {
             for (symbol, action, tip) in [("pin", #selector(pin), "Épingler"), ("trash", #selector(trash), "Supprimer")] {
@@ -94,15 +89,14 @@ final class Thumbnail: NSPanel {
         if Thumbnail.current === self { Thumbnail.current = nil }
     }
 
-    var url: URL? {
+    var url: URL {
         switch content {
         case .image(_, let u, _), .movie(_, let u): return u
-        case .text: return nil
         }
     }
 
     func open() {
-        if let url { NSWorkspace.shared.open(url) }
+        NSWorkspace.shared.open(url)
         dismiss()
     }
 
@@ -112,7 +106,7 @@ final class Thumbnail: NSPanel {
     }
 
     @objc private func trash() {
-        if let url { try? FileManager.default.trashItem(at: url, resultingItemURL: nil) }
+        try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
         dismiss()
     }
 
@@ -137,9 +131,9 @@ final class Thumbnail: NSPanel {
         override func mouseDown(with event: NSEvent) { down = event.locationInWindow }
         override func mouseUp(with event: NSEvent) { if down != nil { card.open() }; down = nil }
         override func mouseDragged(with event: NSEvent) {
-            guard let start = down, start.distance(to: event.locationInWindow) > 6, let url = card.url else { return }
+            guard let start = down, start.distance(to: event.locationInWindow) > 6 else { return }
             down = nil
-            let item = NSDraggingItem(pasteboardWriter: url as NSURL)
+            let item = NSDraggingItem(pasteboardWriter: card.url as NSURL)
             item.setDraggingFrame(bounds, contents: card.contentView?.subviews.compactMap { $0 as? NSImageView }.first?.image)
             beginDraggingSession(with: [item], event: event, source: self)
         }
