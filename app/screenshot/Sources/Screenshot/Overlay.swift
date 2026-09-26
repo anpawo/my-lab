@@ -44,8 +44,10 @@ private final class OverlayView: NSView {
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
     private let frameBase = CAShapeLayer()   // white under the black dashes: no gaps, two colours
-    private let windowTint = CAShapeLayer()  // window mode: a light blue wash in a white frame
+    private let windowGroup = CALayer()      // window mode: a light blue wash in a white frame,
+    private let windowTint = CAShapeLayer()  // masked to what shows from behind the windows in front
     private let windowFrame = CAShapeLayer()
+    private let windowMask = CAShapeLayer()
     private let handlesLayer = CAShapeLayer()
     private let handleDots = CAShapeLayer()
     private let labelBack = CALayer()
@@ -84,7 +86,11 @@ private final class OverlayView: NSView {
         label.foregroundColor = NSColor(white: 1, alpha: 0.75).cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
-        for l in [veil, windowTint, windowFrame, frameBase, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
+        windowGroup.frame = bounds
+        windowGroup.addSublayer(windowTint)
+        windowGroup.addSublayer(windowFrame)
+        windowGroup.mask = windowMask
+        for l in [veil, windowGroup, frameBase, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -228,11 +234,20 @@ private final class OverlayView: NSView {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         veil.opacity = target == .window ? 0 : 0.6
-        windowTint.path = target == .window ? session.hoverWindow.map {
-            CGPath(roundedRect: local($0.frame), cornerWidth: 10, cornerHeight: 10, transform: nil) } : nil
-        // Stroke inside the wash, concentric with it: same outer edge, same corner.
-        windowFrame.path = target == .window ? session.hoverWindow.map {
-            CGPath(roundedRect: local($0.frame).insetBy(dx: 1, dy: 1), cornerWidth: 9, cornerHeight: 9, transform: nil) } : nil
+        if target == .window, let w = session.hoverWindow {
+            let r = local(w.frame)
+            windowTint.path = CGPath(roundedRect: r, cornerWidth: 10, cornerHeight: 10, transform: nil)
+            // Stroke inside the wash, concentric with it: same outer edge, same corner.
+            windowFrame.path = CGPath(roundedRect: r.insetBy(dx: 1, dy: 1), cornerWidth: 9, cornerHeight: 9, transform: nil)
+            // The list is front to back: everything before the hovered window covers it.
+            let fronts = session.windows.prefix { $0.id != w.id }.map { local($0.frame) }
+            let mask = CGMutablePath()
+            for part in visible(r, behind: Array(fronts)) { mask.addRect(part) }
+            windowMask.path = mask
+        } else {
+            windowTint.path = nil
+            windowFrame.path = nil
+        }
         let path = CGMutablePath()
         path.addRect(bounds)
         if let cut, target != .screen { path.addRect(cut) }

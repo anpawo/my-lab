@@ -41,8 +41,6 @@ expect(BarState.all.count == 6, "six buttons, like the system")
 let name = fileName(kind: "Screenshot", app: "Safari/Beta", ext: "png", at: Date(timeIntervalSince1970: 0))
 expect(name.hasPrefix("Screenshot Safari-Beta 1970-01-01 at ") && name.hasSuffix(".png"), "file name: \(name)")
 
-if failures > 0 { exit(1) }
-print("ok")
 
 let base = CGRect(x: 0, y: 0, width: 100, height: 100)
 expect(subtract(base, CGRect(x: 200, y: 0, width: 10, height: 10)) == [base], "no overlap leaves the rect whole")
@@ -51,4 +49,7 @@ let parts = subtract(base, CGRect(x: 40, y: 40, width: 20, height: 20))
 expect(parts.count == 4 && parts.reduce(0) { $0 + $1.area } == 10000 - 400, "a hole in the middle leaves four rects of the right area")
 let vis = visible(base, behind: [CGRect(x: -10, y: -10, width: 60, height: 60), CGRect(x: 50, y: 50, width: 100, height: 100)])
 expect(vis.reduce(0) { $0 + $1.area } == 10000 - 2500 - 2500, "two front windows each take their corner")
+if failures > 0 { exit(1) }
+print("ok")
+
 extension CGRect { var area: CGFloat { width * height } }
