@@ -72,15 +72,15 @@ if arguments.contains("--restore-hotkeys") {
     exit(0)
 }
 
-/// A window list for pictures: only apps everyone has, titles that belong to no one.
+/// A window list for pictures: apps everyone has, titles that belong to no one.
 @MainActor
 func demoWindows() -> [WindowInfo] {
     let script: [(bundle: String, title: String, width: CGFloat)] = [
         ("com.apple.finder", "Downloads", 1100),
         ("org.mozilla.firefox", "Swift.org", 1440),
-        ("com.apple.Safari", "Swift.org", 1440),
+        ("com.apple.Safari", "Apple Developer", 1440),
         ("com.mitchellh.ghostty", "~/code", 960),
-        ("com.apple.Terminal", "~/code", 960),
+        ("com.apple.Terminal", "~/notes", 960),
         ("com.apple.Preview", "poster.pdf", 800),
         ("com.apple.Notes", "Groceries", 700),
         ("com.apple.mail", "Inbox", 1300),
@@ -90,13 +90,35 @@ func demoWindows() -> [WindowInfo] {
         ("com.apple.systempreferences", "Displays", 720),
     ]
     return script.enumerated().compactMap { i, entry in
-        guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: entry.bundle).first else { return nil }
-        let id = CGWindowID(900_000 + i)
+        // Installed is enough; the icon comes off the bundle, the pid is invented.
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: entry.bundle) else { return nil }
+        let id = CGWindowID(900_000 + i), pid = pid_t(900_000 + i)
+        Panel.seedIcon(pid, NSWorkspace.shared.icon(forFile: url.path))
         Thumbnails.seed(id, demoPicture(width: entry.width, height: 860, seed: i))
-        return WindowInfo(id: id, pid: app.processIdentifier,
-                          appName: app.localizedName ?? entry.bundle, title: entry.title,
-                          element: nil, size: CGSize(width: entry.width, height: 860))
+        return WindowInfo(id: id, pid: pid, appName: url.deletingPathExtension().lastPathComponent,
+                          title: entry.title, element: nil, size: CGSize(width: entry.width, height: 860))
     }
+}
+
+/// The main screen at its own pixel size, a plain gradient for a wallpaper (never the user's
+/// own, which may be a photo of someone), and the panel centred on it.
+@MainActor
+func demoScreen(panel: Data) -> Data? {
+    guard let screen = NSScreen.main, let panelImage = NSImage(data: panel),
+          let panelCG = panelImage.cgImage(forProposedRect: nil, context: nil, hints: nil) else { return nil }
+    let scale = screen.backingScaleFactor
+    let w = Int(screen.frame.width * scale), h = Int(screen.frame.height * scale)
+    guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                              space: CGColorSpaceCreateDeviceRGB(),
+                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+    let colors = [CGColor(red: 0.16, green: 0.24, blue: 0.48, alpha: 1), CGColor(red: 0.55, green: 0.30, blue: 0.52, alpha: 1)] as CFArray
+    if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1]) {
+        ctx.drawLinearGradient(gradient, start: CGPoint(x: 0, y: h), end: CGPoint(x: w, y: 0), options: [])
+    }
+    let pw = CGFloat(panelCG.width), ph = CGFloat(panelCG.height)
+    ctx.draw(panelCG, in: CGRect(x: (CGFloat(w) - pw) / 2, y: (CGFloat(h) - ph) / 2, width: pw, height: ph))
+    guard let out = ctx.makeImage() else { return nil }
+    return NSBitmapImageRep(cgImage: out).representation(using: .png, properties: [:])
 }
 
 /// A window that never existed: a title bar, a sidebar or not, a few grey lines of content.
@@ -124,9 +146,8 @@ func demoPicture(width: CGFloat, height: CGFloat, seed: Int) -> NSImage {
 if arguments.contains("--render") {
     MainActor.assumeIsolated {
         WindowList.prewarm()
-        // `--demo` swaps the real windows for made-up ones: icons of well-known apps that
-        // happen to be running, invented titles, no pictures. For a screenshot that shows
-        // nobody's work.
+        // `--demo` swaps the real windows for made-up ones: icons of apps everyone has,
+        // invented titles, hand-drawn pictures. For a screenshot that shows nobody's work.
         let snapshot = arguments.contains("--demo") ? demoWindows() : WindowList.snapshot()
         for (i, window) in snapshot.enumerated() {
             let handle = window.element == nil ? "no element" : "ok"
@@ -142,10 +163,12 @@ if arguments.contains("--render") {
         // pictures, and still nothing on the screen.
         if let shot = arguments.first(where: { $0.hasPrefix("--shot=") }).map({ String($0.dropFirst("--shot=".count)) }) {
             NSApplication.shared.setActivationPolicy(.accessory)
-            guard let data = Panel.png(list, selected: 1, settle: 2.5) else {
+            guard var data = Panel.png(list, selected: 1, settle: 2.5) else {
                 print("could not draw the panel")
                 exit(1)
             }
+            // The demo picture is the whole screen, the panel floating on it, as it looks in use.
+            if arguments.contains("--demo"), let full = demoScreen(panel: data) { data = full }
             try? data.write(to: URL(fileURLWithPath: shot))
             print("wrote \(shot)  (\(list.count) windows)")
             exit(0)

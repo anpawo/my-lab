@@ -460,6 +460,9 @@ enum Panel {
         }
     }
 
+    /// For `--demo`: an icon for a process that does not exist.
+    static func seedIcon(_ pid: pid_t, _ image: NSImage) { icons[pid] = image }
+
     private static func icon(for pid: pid_t) -> NSImage? {
         if let cached = icons[pid] { return cached }
         let icon = NSRunningApplication(processIdentifier: pid)?.icon
