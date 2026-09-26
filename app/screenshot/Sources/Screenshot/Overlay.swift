@@ -205,11 +205,7 @@ private final class OverlayView: NSView {
         var text: String?
         switch target {
         case .screen:
-            // Below the notch strip, or the display's own rounded corners eat the frame's.
-            if session.hoverScreen == screen {
-                cut = CGRect(x: 0, y: 0, width: bounds.width, height: bounds.height - screen.safeAreaInsets.top)
-                text = pixels(screen.frame)
-            }
+            if session.hoverScreen == screen { cut = bounds; text = pixels(screen.frame) }
         case .window:
             if let w = session.hoverWindow { cut = local(w.frame); text = "\(w.app)  \(pixels(w.frame))" }
         case .area:
@@ -225,8 +221,9 @@ private final class OverlayView: NSView {
         hole.path = path
         if let cut {
             frameLayer.lineWidth = rounded ? 2 : 1
-            frameLayer.path = rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
-                                      : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
+            frameLayer.path = target == .screen ? screenFrame(cut.insetBy(dx: 1, dy: 1))
+                : rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
+                : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
             let handles = CGMutablePath()
             if target == .area {
                 for i in 0..<8 { let p = handlePoint(cut, i); handles.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)) }
@@ -247,6 +244,20 @@ private final class OverlayView: NSView {
             label.frame = .zero
         }
         CATransaction.commit()
+    }
+
+    /// The display's own outline: round top corners on a notched panel, square everywhere else.
+    private func screenFrame(_ r: CGRect) -> CGPath {
+        let top: CGFloat = screen.safeAreaInsets.top > 0 ? 12 : 0
+        let p = CGMutablePath()
+        p.move(to: CGPoint(x: r.minX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
+        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - top))
+        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY), tangent2End: CGPoint(x: r.maxX - top, y: r.maxY), radius: top)
+        p.addLine(to: CGPoint(x: r.minX + top, y: r.maxY))
+        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY), tangent2End: CGPoint(x: r.minX, y: r.maxY - top), radius: top)
+        p.closeSubpath()
+        return p
     }
 
     private func pixels(_ r: CGRect) -> String {
