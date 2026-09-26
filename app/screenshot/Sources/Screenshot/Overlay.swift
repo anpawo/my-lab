@@ -243,6 +243,9 @@ private final class OverlayView: NSView {
             let fronts = session.windows.prefix { $0.id != w.id }.map { local($0.frame) }
             let mask = CGMutablePath()
             for part in visible(r, behind: Array(fronts)) { mask.addRect(part) }
+            // Windows in front have round corners: give the cut the same, by adding back the
+            // slivers between each square corner and its arc.
+            for f in fronts { addFillets(of: f, inside: r, to: mask) }
             windowMask.path = mask
         } else {
             windowTint.path = nil
@@ -298,6 +301,23 @@ private final class OverlayView: NSView {
             label.frame = .zero
         }
         CATransaction.commit()
+    }
+
+    /// The four corner slivers of `f` (a 10 pt radius, like a macOS window), for the corners that
+    /// fall inside `r`: square corner minus quarter disc.
+    private func addFillets(of f: CGRect, inside r: CGRect, to path: CGMutablePath) {
+        let radius: CGFloat = 10
+        for (sx, sy) in [(1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0), (1.0, -1.0)] as [(CGFloat, CGFloat)] {
+            let corner = CGPoint(x: sx > 0 ? f.minX : f.maxX, y: sy > 0 ? f.minY : f.maxY)
+            guard r.insetBy(dx: 1, dy: 1).contains(corner) else { continue }
+            let onX = CGPoint(x: corner.x + sx * radius, y: corner.y)    // where the arc meets the x edge
+            let onY = CGPoint(x: corner.x, y: corner.y + sy * radius)
+            path.move(to: corner)
+            path.addLine(to: onX)
+            path.addArc(tangent1End: corner, tangent2End: onY, radius: radius)
+            path.addLine(to: onY)
+            path.closeSubpath()
+        }
     }
 
     /// The display's own outline: round top corners on a notched panel, square everywhere else.
