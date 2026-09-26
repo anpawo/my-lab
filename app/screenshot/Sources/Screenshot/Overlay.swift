@@ -60,7 +60,7 @@ private final class OverlayView: NSView {
         layer!.contentsGravity = .resize
         veil.frame = bounds
         veil.backgroundColor = NSColor.black.cgColor
-        veil.opacity = 0.45
+        veil.opacity = 0.6
         hole.fillRule = .evenOdd
         hole.fillColor = NSColor.black.cgColor
         veil.mask = hole
@@ -229,7 +229,7 @@ private final class OverlayView: NSView {
             // The selection: a black dotted line, white handles with a gray core.
             frameLayer.lineWidth = rounded ? 2 : 1
             frameLayer.strokeColor = (rounded ? NSColor.white : NSColor.black).cgColor
-            frameLayer.lineDashPattern = rounded ? nil : [3, 3]
+            frameLayer.lineDashPattern = rounded ? nil : [6, 6]
             frameLayer.path = target == .screen ? screenFrame(cut.insetBy(dx: 1, dy: 1))
                 : rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
                 : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
