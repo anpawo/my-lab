@@ -236,9 +236,10 @@ private final class OverlayView: NSView {
         veil.opacity = target == .window ? 0 : 0.6
         if target == .window, let w = session.hoverWindow {
             let r = local(w.frame)
-            windowTint.path = CGPath(roundedRect: r, cornerWidth: 10, cornerHeight: 10, transform: nil)
+            // 17.5 pt: measured on macOS 26 windows (35 px at 2× in a shadowless capture).
+            windowTint.path = CGPath(roundedRect: r, cornerWidth: 17.5, cornerHeight: 17.5, transform: nil)
             // Stroke inside the wash, concentric with it: same outer edge, same corner.
-            windowFrame.path = CGPath(roundedRect: r.insetBy(dx: 1, dy: 1), cornerWidth: 9, cornerHeight: 9, transform: nil)
+            windowFrame.path = CGPath(roundedRect: r.insetBy(dx: 1, dy: 1), cornerWidth: 16.5, cornerHeight: 16.5, transform: nil)
             // The list is front to back: everything before the hovered window covers it.
             let fronts = session.windows.prefix { $0.id != w.id }.map { local($0.frame) }
             let mask = CGMutablePath()
@@ -303,10 +304,10 @@ private final class OverlayView: NSView {
         CATransaction.commit()
     }
 
-    /// The four corner slivers of `f` (a 10 pt radius, like a macOS window), for the corners that
+    /// The four corner slivers of `f` (a macOS window's 17.5 pt radius), for the corners that
     /// fall inside `r`: square corner minus quarter disc.
     private func addFillets(of f: CGRect, inside r: CGRect, to path: CGMutablePath) {
-        let radius: CGFloat = 10
+        let radius: CGFloat = 17.5
         for (sx, sy) in [(1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0), (1.0, -1.0)] as [(CGFloat, CGFloat)] {
             let corner = CGPoint(x: sx > 0 ? f.minX : f.maxX, y: sy > 0 ? f.minY : f.maxY)
             guard r.insetBy(dx: 1, dy: 1).contains(corner) else { continue }
