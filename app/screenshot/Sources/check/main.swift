@@ -1,0 +1,47 @@
+import CoreGraphics
+import Foundation
+import ScreenshotCore
+
+var failures = 0
+func expect(_ ok: Bool, _ what: String) { if !ok { failures += 1; print("FAIL: \(what)") } }
+
+// A second display left of, and higher than, the 1000×800 main one.
+let side = CGRect(x: -500, y: 200, width: 500, height: 400)
+let sel = CGRect(x: -400, y: 500, width: 100, height: 50)
+expect(displayLocal(sel, in: side) == CGRect(x: 100, y: 50, width: 100, height: 50),
+       "selection on a secondary display flips into its own top-left frame")
+expect(pixelCrop(sel, in: side, scale: 2) == CGRect(x: 200, y: 100, width: 200, height: 100),
+       "pixel crop scales the local rect")
+expect(appKit(CGRect(x: 10, y: 20, width: 30, height: 40), mainHeight: 800)
+       == CGRect(x: 10, y: 740, width: 30, height: 40), "CG → AppKit flip")
+
+let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+let r = CGRect(x: 10, y: 10, width: 20, height: 20)
+expect(nudge(r, dx: 5, dy: 0, resize: false, bounds: bounds).minX == 15, "move right")
+expect(nudge(r, dx: 200, dy: 0, resize: false, bounds: bounds).maxX == 100, "move clamps to bounds")
+expect(nudge(r, dx: 0, dy: 5, resize: true, bounds: bounds).height == 25, "resize grows")
+expect(nudge(r, dx: 0, dy: -50, resize: true, bounds: bounds).height == 1, "resize never below 1")
+expect(nudge(r, dx: 500, dy: 0, resize: true, bounds: bounds).maxX == 100, "resize clamps to bounds")
+
+expect(resized(r, handle: 4, to: CGPoint(x: 50, y: 60)) == CGRect(x: 10, y: 10, width: 40, height: 50),
+       "top-right handle keeps the bottom-left corner")
+expect(resized(r, handle: 0, to: CGPoint(x: 50, y: 50)) == CGRect(x: 30, y: 30, width: 20, height: 20),
+       "dragging a corner past the opposite one flips cleanly")
+expect(resized(r, handle: 3, to: CGPoint(x: 70, y: 0)) == CGRect(x: 10, y: 10, width: 60, height: 20),
+       "an edge handle ignores the other axis")
+
+var bar = BarState(target: .text, kind: .photo)
+bar.step(1); expect(bar == BarState(target: .screen, kind: .video), "⌘→ goes from the last still to the first recording")
+bar.step(-1); expect(bar == BarState(target: .text, kind: .photo), "⌘← comes back")
+bar = BarState(target: .area, kind: .video)
+bar.step(1); expect(bar == BarState(target: .screen, kind: .photo), "⌘→ wraps around")
+bar.toggleKind(); expect(bar.kind == .video && bar.target == .screen, "⌘⇧5 keeps the target when it exists in video")
+bar = BarState(target: .text, kind: .photo)
+bar.toggleKind(); expect(bar.kind == .video && bar.target == .area, "video drops text and falls back to area")
+expect(BarState.all.count == 7, "seven buttons")
+
+let name = fileName(kind: "Screenshot", app: "Safari/Beta", ext: "png", at: Date(timeIntervalSince1970: 0))
+expect(name.hasPrefix("Screenshot Safari-Beta 1970-01-01 at ") && name.hasSuffix(".png"), "file name: \(name)")
+
+if failures > 0 { exit(1) }
+print("ok")
