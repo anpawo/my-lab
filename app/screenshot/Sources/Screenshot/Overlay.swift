@@ -44,6 +44,7 @@ private final class OverlayView: NSView {
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
     private let handlesLayer = CAShapeLayer()
+    private let handleDots = CAShapeLayer()
     private let labelBack = CALayer()
     private let label = CATextLayer()
 
@@ -65,6 +66,7 @@ private final class OverlayView: NSView {
         frameLayer.fillColor = nil
         frameLayer.strokeColor = NSColor.white.cgColor
         handlesLayer.fillColor = NSColor.white.cgColor
+        handleDots.fillColor = NSColor(white: 0.5, alpha: 1).cgColor
         labelBack.backgroundColor = NSColor(white: 0, alpha: 0.7).cgColor
         labelBack.cornerRadius = 4
         label.fontSize = 11
@@ -72,7 +74,7 @@ private final class OverlayView: NSView {
         label.foregroundColor = NSColor.white.cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
-        for l in [veil, frameLayer, handlesLayer, labelBack, label] { layer!.addSublayer(l) }
+        for l in [veil, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -220,15 +222,23 @@ private final class OverlayView: NSView {
         if let cut, target != .screen { path.addRect(cut) }
         hole.path = path
         if let cut {
+            // The selection: a black dotted line, white handles with a gray core.
             frameLayer.lineWidth = rounded ? 2 : 1
+            frameLayer.strokeColor = (rounded ? NSColor.white : NSColor.black).cgColor
+            frameLayer.lineDashPattern = rounded ? nil : [3, 3]
             frameLayer.path = target == .screen ? screenFrame(cut.insetBy(dx: 1, dy: 1))
                 : rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
                 : CGPath(rect: cut.insetBy(dx: -0.5, dy: -0.5), transform: nil)
-            let handles = CGMutablePath()
+            let handles = CGMutablePath(), dots = CGMutablePath()
             if target == .area {
-                for i in 0..<8 { let p = handlePoint(cut, i); handles.addEllipse(in: CGRect(x: p.x - 4, y: p.y - 4, width: 8, height: 8)) }
+                for i in 0..<8 {
+                    let p = handlePoint(cut, i)
+                    handles.addEllipse(in: CGRect(x: p.x - 5, y: p.y - 5, width: 10, height: 10))
+                    dots.addEllipse(in: CGRect(x: p.x - 2.5, y: p.y - 2.5, width: 5, height: 5))
+                }
             }
             handlesLayer.path = handles
+            handleDots.path = dots
             label.string = text
             let size = (text! as NSString).size(withAttributes: [.font: label.font as! NSFont])
             var box = CGRect(x: cut.minX, y: cut.minY - size.height - 10, width: size.width + 12, height: size.height + 6)
@@ -240,6 +250,7 @@ private final class OverlayView: NSView {
         } else {
             frameLayer.path = nil
             handlesLayer.path = nil
+            handleDots.path = nil
             labelBack.frame = .zero
             label.frame = .zero
         }
