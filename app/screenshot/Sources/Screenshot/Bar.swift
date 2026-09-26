@@ -27,14 +27,12 @@ final class Bar: NSPanel {
         sharingType = .none
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
 
+        acceptsMouseMovedEvents = true
         let back = NSVisualEffectView()
         back.material = .popover
         back.state = .active
-        back.wantsLayer = true
-        back.layer?.cornerRadius = 12
-        back.layer?.masksToBounds = true
-        back.layer?.borderWidth = 0.5
-        back.layer?.borderColor = NSColor.separatorColor.cgColor
+        // An effect view ignores its layer's corner radius; its mask image is what rounds it.
+        back.maskImage = Bar.roundedMask
         contentView = back
         // The overlay sets its own cursor on every move; the bar takes the arrow back.
         back.addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect], owner: self))
@@ -125,6 +123,16 @@ final class Bar: NSPanel {
         view.cacheDisplay(in: view.bounds, to: rep)
         return rep.representation(using: .png, properties: [:])
     }
+
+    private static let roundedMask: NSImage = {
+        let img = NSImage(size: CGSize(width: 26, height: 26), flipped: false) { r in
+            NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12).fill()
+            return true
+        }
+        img.capInsets = NSEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        img.resizingMode = .stretch
+        return img
+    }()
 
     private static func divider(at x: CGFloat) -> NSView {
         let v = NSView(frame: CGRect(x: x, y: (Bar.height - 22) / 2, width: 1, height: 22))
