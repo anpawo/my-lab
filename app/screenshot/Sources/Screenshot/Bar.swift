@@ -12,6 +12,7 @@ final class Bar: NSPanel, NSMenuDelegate {
     private var buttons: [ModeButton] = []
     private let go = NSButton()
     private let options = NSButton()
+    private let hint = Hint()
 
     init(session: Session, on screen: NSScreen) {
         self.session = session
@@ -48,6 +49,10 @@ final class Bar: NSPanel, NSMenuDelegate {
         var x: CGFloat = 43.75
         for state in BarState.all {
             let b = ModeButton(state: state, target: self, action: #selector(pick(_:)))
+            b.onHover = { [weak self, weak b] over in
+                guard let self, let b else { return }
+                if over { self.hint.show(b.toolTip!, above: b, in: self) } else { self.hint.hide() }
+            }
             let wide = state.kind == .video
             if wide && buttons.last?.mode.kind == .photo {
                 back.addSubview(Bar.divider(at: x + 4))       // 10 pt after the last still
@@ -94,6 +99,7 @@ final class Bar: NSPanel, NSMenuDelegate {
     }
 
     override var canBecomeKey: Bool { false }
+    override func orderOut(_ sender: Any?) { hint.hide(); super.orderOut(sender) }
     override func mouseEntered(with event: NSEvent) { NSCursor.arrow.set() }
     override func mouseMoved(with event: NSEvent) { NSCursor.arrow.set() }
 
@@ -237,10 +243,55 @@ final class ModeButton: NSButton {
         contentTintColor = NSColor.labelColor.withAlphaComponent(0.7)
         toolTip = (state.kind == .video ? "Record " : "Capture ") + Glyph.tip[state.target]!
         wantsLayer = true
+        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
         layer?.cornerRadius = 8
     }
     required init?(coder: NSCoder) { nil }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    /// The system shows the mode's name above the button as soon as the mouse is on it, with
+    /// none of a tooltip's delay.
+    var onHover: ((Bool) -> Void)?
+    override func mouseEntered(with event: NSEvent) { onHover?(true) }
+    override func mouseExited(with event: NSEvent) { onHover?(false) }
+}
+
+/// The little dark label above a hovered button.
+final class Hint: NSPanel {
+    private let text = NSTextField(labelWithString: "")
+
+    init() {
+        super.init(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        level = NSWindow.Level(rawValue: NSWindow.Level.screenSaver.rawValue + 2)
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = false
+        ignoresMouseEvents = true
+        sharingType = .none
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        let back = NSView()
+        back.wantsLayer = true
+        back.layer?.backgroundColor = NSColor(white: 0.12, alpha: 0.92).cgColor
+        back.layer?.cornerRadius = 5
+        text.font = .systemFont(ofSize: 12)
+        text.textColor = .white
+        back.addSubview(text)
+        contentView = back
+    }
+
+    override var canBecomeKey: Bool { false }
+
+    func show(_ s: String, above button: NSView, in bar: NSWindow) {
+        text.stringValue = s
+        text.sizeToFit()
+        let size = CGSize(width: text.frame.width + 16, height: text.frame.height + 8)
+        text.frame.origin = CGPoint(x: 8, y: 4)
+        let b = bar.convertToScreen(button.convert(button.bounds, to: nil))
+        setFrame(CGRect(x: (b.midX - size.width / 2).rounded(), y: b.maxY + 12, width: size.width, height: size.height), display: true)
+        orderFrontRegardless()
+    }
+
+    func hide() { orderOut(nil) }
 }
 
 /// The system's glyphs, traced from its bar: a 28.5 × 22.5 rounded rect with a 2 pt stroke and
