@@ -44,7 +44,8 @@ private final class OverlayView: NSView {
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
     private let frameBase = CAShapeLayer()   // white under the black dashes: no gaps, two colours
-    private let windowTint = CAShapeLayer()  // window mode: a light blue wash, nothing else
+    private let windowTint = CAShapeLayer()  // window mode: a light blue wash in a white frame
+    private let windowFrame = CAShapeLayer()
     private let handlesLayer = CAShapeLayer()
     private let handleDots = CAShapeLayer()
     private let labelBack = CALayer()
@@ -66,6 +67,9 @@ private final class OverlayView: NSView {
         hole.fillColor = NSColor.black.cgColor
         veil.mask = hole
         windowTint.fillColor = NSColor(red: 0.45, green: 0.7, blue: 1, alpha: 0.5).cgColor
+        windowFrame.fillColor = nil
+        windowFrame.strokeColor = NSColor.white.cgColor
+        windowFrame.lineWidth = 2
         frameBase.fillColor = nil
         frameBase.strokeColor = NSColor.white.cgColor
         frameBase.lineWidth = 1
@@ -80,7 +84,7 @@ private final class OverlayView: NSView {
         label.foregroundColor = NSColor(white: 1, alpha: 0.75).cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
-        for l in [veil, windowTint, frameBase, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
+        for l in [veil, windowTint, windowFrame, frameBase, frameLayer, handlesLayer, handleDots, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -214,7 +218,8 @@ private final class OverlayView: NSView {
         switch target {
         case .screen:
             if session.hoverScreen == screen { cut = bounds; text = pixels(screen.frame) }
-        case .window: break
+        case .window:
+            if let w = session.hoverWindow { text = w.title.isEmpty ? w.app : "\(w.app) — \(w.title)" }
         case .area:
             if let sel = session.selection, screen.frame.contains(sel) { cut = local(sel); text = pixels(sel) }
         }
@@ -225,11 +230,22 @@ private final class OverlayView: NSView {
         veil.opacity = target == .window ? 0 : 0.6
         windowTint.path = target == .window ? session.hoverWindow.map {
             CGPath(roundedRect: local($0.frame), cornerWidth: 10, cornerHeight: 10, transform: nil) } : nil
+        windowFrame.path = windowTint.path
         let path = CGMutablePath()
         path.addRect(bounds)
         if let cut, target != .screen { path.addRect(cut) }
         hole.path = path
-        if let cut {
+        if target == .window, let text {
+            // The window's name sits above the bar, centred on the screen.
+            frameLayer.path = nil; frameBase.path = nil; handlesLayer.path = nil; handleDots.path = nil
+            label.string = text
+            let size = (text as NSString).size(withAttributes: [.font: label.font as! NSFont])
+            let box = CGRect(x: (bounds.midX - size.width / 2 - 6).rounded(),
+                             y: local(screen.visibleFrame).minY + 24 + Bar.height + 12,
+                             width: size.width + 12, height: size.height + 6)
+            labelBack.frame = box
+            label.frame = box.insetBy(dx: 0, dy: 3)
+        } else if let cut {
             // The selection: a black dotted line, white handles with a gray core.
             frameLayer.lineWidth = rounded ? 2 : 1
             frameLayer.strokeColor = (rounded ? NSColor.white : NSColor.black).cgColor
