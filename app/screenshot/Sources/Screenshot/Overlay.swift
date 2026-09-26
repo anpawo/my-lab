@@ -230,7 +230,9 @@ private final class OverlayView: NSView {
         veil.opacity = target == .window ? 0 : 0.6
         windowTint.path = target == .window ? session.hoverWindow.map {
             CGPath(roundedRect: local($0.frame), cornerWidth: 10, cornerHeight: 10, transform: nil) } : nil
-        windowFrame.path = windowTint.path
+        // Stroke inside the wash, concentric with it: same outer edge, same corner.
+        windowFrame.path = target == .window ? session.hoverWindow.map {
+            CGPath(roundedRect: local($0.frame).insetBy(dx: 1, dy: 1), cornerWidth: 9, cornerHeight: 9, transform: nil) } : nil
         let path = CGMutablePath()
         path.addRect(bounds)
         if let cut, target != .screen { path.addRect(cut) }
