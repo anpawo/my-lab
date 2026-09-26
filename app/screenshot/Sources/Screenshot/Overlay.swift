@@ -44,7 +44,6 @@ private final class OverlayView: NSView {
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
     private let handlesLayer = CAShapeLayer()
-    private let tint = CAShapeLayer()
     private let labelBack = CALayer()
     private let label = CATextLayer()
 
@@ -66,7 +65,6 @@ private final class OverlayView: NSView {
         frameLayer.fillColor = nil
         frameLayer.strokeColor = NSColor.white.cgColor
         handlesLayer.fillColor = NSColor.white.cgColor
-        tint.fillColor = NSColor(white: 0, alpha: 0.4).cgColor
         labelBack.backgroundColor = NSColor(white: 0, alpha: 0.7).cgColor
         labelBack.cornerRadius = 4
         label.fontSize = 11
@@ -74,7 +72,7 @@ private final class OverlayView: NSView {
         label.foregroundColor = NSColor.white.cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
-        for l in [veil, tint, frameLayer, handlesLayer, labelBack, label] { layer!.addSublayer(l) }
+        for l in [veil, frameLayer, handlesLayer, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -200,8 +198,8 @@ private final class OverlayView: NSView {
     /// Called by the session after any hover or state change.
     func update() {
         let target = session.state.target
-        // Screen and window: one veil, framed in white on what the click would take, the window
-        // cut out of it. Area: no veil, the selection itself carries a tint, like ⌘⇧4.
+        // One veil, framed in white on what the click would take: the window and the selection
+        // are cut out of it, a whole screen stays under it or nothing would look dark.
         var cut: CGRect?
         var text: String?
         switch target {
@@ -216,12 +214,10 @@ private final class OverlayView: NSView {
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        veil.opacity = target == .area ? 0 : 0.45
         let path = CGMutablePath()
         path.addRect(bounds)
-        if let cut, target == .window { path.addRect(cut) }
+        if let cut, target != .screen { path.addRect(cut) }
         hole.path = path
-        tint.path = target == .area ? cut.map { CGPath(rect: $0, transform: nil) } : nil
         if let cut {
             frameLayer.lineWidth = rounded ? 2 : 1
             frameLayer.path = rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
