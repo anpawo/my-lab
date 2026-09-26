@@ -66,7 +66,7 @@ private final class OverlayView: NSView {
         frameLayer.fillColor = nil
         frameLayer.strokeColor = NSColor.white.cgColor
         handlesLayer.fillColor = NSColor.white.cgColor
-        tint.fillColor = NSColor(white: 0.5, alpha: 0.3).cgColor
+        tint.fillColor = NSColor(white: 0, alpha: 0.4).cgColor
         labelBack.backgroundColor = NSColor(white: 0, alpha: 0.7).cgColor
         labelBack.cornerRadius = 4
         label.fontSize = 11
