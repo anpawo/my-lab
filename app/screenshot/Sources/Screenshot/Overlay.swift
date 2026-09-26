@@ -171,7 +171,8 @@ private final class OverlayView: NSView {
             }
             if r.contains(p) { return .openHand }
         }
-        return .selection
+        // Outside the box the screen is veiled, where the dark cross would vanish.
+        return session.selection == nil ? .selection : .selectionLight
     }
 
     // MARK: Keyboard
@@ -260,17 +261,28 @@ extension NSCursor {
     /// shadow, applied here since the PDFs carry none.
     static let camera = system("screenshotwindow", hotSpot: CGPoint(x: 14, y: 11)) ?? .arrow
     static let selection = system("screenshotselection", hotSpot: CGPoint(x: 15, y: 15)) ?? .crosshair
+    static let selectionLight = system("screenshotselection", hotSpot: CGPoint(x: 15, y: 15), white: true) ?? .crosshair
 
-    private static func system(_ name: String, hotSpot: CGPoint) -> NSCursor? {
+    private static func system(_ name: String, hotSpot: CGPoint, white: Bool = false) -> NSCursor? {
         let base = "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/"
         guard let pdf = NSImage(contentsOfFile: base + name + "/cursor.pdf") else { return nil }
         let img = NSImage(size: pdf.size, flipped: false) { r in
             let shadow = NSShadow()
-            shadow.shadowColor = NSColor.black.withAlphaComponent(0.45)
+            shadow.shadowColor = NSColor.black.withAlphaComponent(white ? 0.8 : 0.45)
             shadow.shadowOffset = CGSize(width: 0, height: -1)
             shadow.shadowBlurRadius = 2
             shadow.set()
-            pdf.draw(in: r)
+            if white {
+                let tinted = NSImage(size: pdf.size, flipped: false) { rr in
+                    pdf.draw(in: rr)
+                    NSColor.white.set()
+                    rr.fill(using: .sourceAtop)
+                    return true
+                }
+                tinted.draw(in: r)
+            } else {
+                pdf.draw(in: r)
+            }
             return true
         }
         return NSCursor(image: img, hotSpot: hotSpot)
