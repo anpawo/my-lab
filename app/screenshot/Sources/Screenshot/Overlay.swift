@@ -44,6 +44,7 @@ private final class OverlayView: NSView {
     private let hole = CAShapeLayer()
     private let frameLayer = CAShapeLayer()
     private let handlesLayer = CAShapeLayer()
+    private let tint = CAShapeLayer()
     private let labelBack = CALayer()
     private let label = CATextLayer()
 
@@ -65,6 +66,7 @@ private final class OverlayView: NSView {
         frameLayer.fillColor = nil
         frameLayer.strokeColor = NSColor.white.cgColor
         handlesLayer.fillColor = NSColor.white.cgColor
+        tint.fillColor = NSColor(white: 0.5, alpha: 0.3).cgColor
         labelBack.backgroundColor = NSColor(white: 0, alpha: 0.7).cgColor
         labelBack.cornerRadius = 4
         label.fontSize = 11
@@ -72,7 +74,7 @@ private final class OverlayView: NSView {
         label.foregroundColor = NSColor.white.cgColor
         label.alignmentMode = .center
         label.contentsScale = screen.backingScaleFactor
-        for l in [veil, frameLayer, handlesLayer, labelBack, label] { layer!.addSublayer(l) }
+        for l in [veil, tint, frameLayer, handlesLayer, labelBack, label] { layer!.addSublayer(l) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .activeAlways], owner: self))
     }
     required init?(coder: NSCoder) { nil }
@@ -115,12 +117,26 @@ private final class OverlayView: NSView {
         case .window:
             if let w = session.windows.first(where: { $0.frame.contains(p) }) { session.commit(window: w) }
         case .area:
-            if let r = session.selection {
-                if let i = (0..<8).first(where: { handlePoint(r, $0).distance(to: p) < 8 }) { drag = .resize(i); return }
+            // Like the system: with a selection up, corners and edges resize it, its inside moves
+            // it, and only ⌘-click starts a fresh one from the cursor.
+            if let r = session.selection, !event.modifierFlags.contains(.command) {
+                if let i = handle(of: r, at: p) { drag = .resize(i); return }
                 if r.contains(p) { drag = .move(CGPoint(x: p.x - r.minX, y: p.y - r.minY)); return }
+                return
             }
             drag = .new(p)
         }
+    }
+
+    /// The handle under `p`: a corner within 8 pt, else an edge within 6 pt.
+    private func handle(of r: CGRect, at p: CGPoint) -> Int? {
+        if let i = [0, 2, 4, 6].first(where: { handlePoint(r, $0).distance(to: p) < 8 }) { return i }
+        let inX = (r.minX - 6...r.maxX + 6).contains(p.x), inY = (r.minY - 6...r.maxY + 6).contains(p.y)
+        if inX && abs(p.y - r.minY) < 6 { return 1 }
+        if inY && abs(p.x - r.maxX) < 6 { return 3 }
+        if inX && abs(p.y - r.maxY) < 6 { return 5 }
+        if inY && abs(p.x - r.minX) < 6 { return 7 }
+        return nil
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -150,8 +166,11 @@ private final class OverlayView: NSView {
 
     private func cursor(at p: CGPoint) -> NSCursor {
         guard session.state.needsSelection else { return .camera }
-        if let r = session.selection {
-            if (0..<8).contains(where: { handlePoint(r, $0).distance(to: p) < 8 }) { return .selection }
+        if let r = session.selection, !NSEvent.modifierFlags.contains(.command) {
+            if let i = handle(of: r, at: p) {
+                let positions: [NSCursor.FrameResizePosition] = [.bottomLeft, .bottom, .bottomRight, .right, .topRight, .top, .topLeft, .left]
+                return .frameResize(position: positions[i], directions: .all)
+            }
             if r.contains(p) { return .openHand }
         }
         return .selection
@@ -181,8 +200,8 @@ private final class OverlayView: NSView {
     /// Called by the session after any hover or state change.
     func update() {
         let target = session.state.target
-        // One veil, every mode, framed in white on what the click would take. The window and the
-        // selection are cut out of it; a whole screen stays veiled, or nothing would look dark.
+        // Screen and window: one veil, framed in white on what the click would take, the window
+        // cut out of it. Area: no veil, the selection itself carries a tint, like ⌘⇧4.
         var cut: CGRect?
         var text: String?
         switch target {
@@ -197,10 +216,12 @@ private final class OverlayView: NSView {
 
         CATransaction.begin()
         CATransaction.setDisableActions(true)
+        veil.opacity = target == .area ? 0 : 0.45
         let path = CGMutablePath()
         path.addRect(bounds)
-        if let cut, target != .screen { path.addRect(cut) }
+        if let cut, target == .window { path.addRect(cut) }
         hole.path = path
+        tint.path = target == .area ? cut.map { CGPath(rect: $0, transform: nil) } : nil
         if let cut {
             frameLayer.lineWidth = rounded ? 2 : 1
             frameLayer.path = rounded ? CGPath(roundedRect: cut.insetBy(dx: 1, dy: 1), cornerWidth: 10, cornerHeight: 10, transform: nil)
