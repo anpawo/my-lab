@@ -12,7 +12,7 @@ final class Thumbnail: NSPanel {
     private static var current: Thumbnail?
     private let content: Content
     private var timer: Timer?
-    private let buttons = NSStackView()
+    private var buttons: [NSButton] = []
 
     static func show(_ content: Content) {
         guard Settings.thumbnail else { return }
@@ -55,15 +55,21 @@ final class Thumbnail: NSPanel {
             view.addSubview(label("Recording", in: view.bounds))
         }
         if case .image = content {
-            for (symbol, action, tip) in [("pin", #selector(pin), "Pin"), ("trash", #selector(trash), "Delete")] {
+            // White symbols on dark discs, so they read on any picture. Shown while hovered.
+            for (i, (symbol, action, tip)) in [("pin", #selector(pin), "Pin"), ("trash", #selector(trash), "Delete")].enumerated() {
                 let b = NSButton(image: NSImage(systemSymbolName: symbol, accessibilityDescription: tip)!, target: self, action: action)
-                b.bezelStyle = .circular
+                b.isBordered = false
+                b.imagePosition = .imageOnly
+                b.contentTintColor = .white
                 b.toolTip = tip
-                buttons.addArrangedSubview(b)
+                b.wantsLayer = true
+                b.layer?.backgroundColor = NSColor(white: 0, alpha: 0.65).cgColor
+                b.layer?.cornerRadius = 13
+                b.frame = CGRect(x: 8 + CGFloat(i) * 32, y: frame.height - 34, width: 26, height: 26)
+                b.isHidden = true
+                view.addSubview(b)
+                buttons.append(b)
             }
-            buttons.frame = CGRect(x: 6, y: frame.height - 34, width: 80, height: 28)
-            buttons.isHidden = true
-            view.addSubview(buttons)
         }
 
         setFrameOrigin(CGPoint(x: v.maxX - frame.width - 16, y: v.maxY - frame.height - 16))
@@ -87,7 +93,7 @@ final class Thumbnail: NSPanel {
         }
     }
     func hold() { timer?.invalidate() }
-    func hover(_ on: Bool) { buttons.isHidden = !on }
+    func hover(_ on: Bool) { buttons.forEach { $0.isHidden = !on } }
 
     func dismiss() {
         timer?.invalidate()
