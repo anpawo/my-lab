@@ -6,10 +6,14 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 ./build.sh
-LABEL="com.mr.screenshot"
+LABEL="app.screenshot"
 DEST="$HOME/Applications/mr. screenshot.app"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 launchctl bootout "gui/$UID/$LABEL" 2>/dev/null || true
+# The agent was `com.mr.screenshot` until 27-09, when app agents took the `app.` prefix. The
+# bundle id keeps the old name: the Screen Recording grant is filed under it.
+launchctl bootout "gui/$UID/com.mr.screenshot" 2>/dev/null || true
+rm -f "$HOME/Library/LaunchAgents/com.mr.screenshot.plist"
 pkill -f "mr. screenshot.app/Contents/MacOS/screenshot" 2>/dev/null || true
 rm -rf "$DEST"; mkdir -p "$HOME/Applications"; cp -R "dist/mr. screenshot.app" "$DEST"
 cat > "$PLIST" <<EOF
