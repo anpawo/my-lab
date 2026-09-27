@@ -18,9 +18,7 @@ final class Session {
     private var overlays: [Overlay] = []
     private var bar: Bar?
     private let recorder = Recorder()
-    private var clock: Timer?
     private var opening = false
-    var onRecordingChange: ((String?) -> Void)?
 
     var isOpen: Bool { !overlays.isEmpty }
 
@@ -197,22 +195,10 @@ final class Session {
                 NSLog("screenshot: \(error.localizedDescription)")
                 return
             }
-            clock = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-                Task { @MainActor in self?.tick() }
-            }
-            tick()
         }
     }
 
-    private func tick() {
-        let t = Int(Date().timeIntervalSince(recorder.started))
-        onRecordingChange?(String(format: "● %d:%02d", t / 60, t % 60))
-    }
-
     func stopRecording() {
-        clock?.invalidate()
-        clock = nil
-        onRecordingChange?(nil)
         Task {
             guard let url = await recorder.stop() else { return }
             for f in Settings.folders.dropFirst() {

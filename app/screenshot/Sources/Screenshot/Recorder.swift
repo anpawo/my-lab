@@ -8,7 +8,6 @@ import ScreenshotCore
 final class Recorder: NSObject, SCStreamDelegate, SCRecordingOutputDelegate {
     private var stream: SCStream?
     private(set) var url: URL?
-    private(set) var started = Date()
     private var finished: CheckedContinuation<Void, Never>?
 
     var isRecording: Bool { stream != nil }
@@ -37,7 +36,6 @@ final class Recorder: NSObject, SCStreamDelegate, SCRecordingOutputDelegate {
         try await stream.startCapture()
         self.stream = stream
         self.url = url
-        started = Date()
     }
 
     /// Returns once the file is closed and playable.

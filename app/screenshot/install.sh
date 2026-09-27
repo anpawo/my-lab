@@ -12,7 +12,6 @@ PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 launchctl bootout "gui/$UID/$LABEL" 2>/dev/null || true
 pkill -f "mr. screenshot.app/Contents/MacOS/screenshot" 2>/dev/null || true
 rm -rf "$DEST"; mkdir -p "$HOME/Applications"; cp -R "dist/mr. screenshot.app" "$DEST"
-# SuccessfulExit false: Quit in the menu stays quit until the next login; a crash or a kill does not.
 cat > "$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -27,10 +26,7 @@ cat > "$PLIST" <<EOF
 	<key>RunAtLoad</key>
 	<true/>
 	<key>KeepAlive</key>
-	<dict>
-		<key>SuccessfulExit</key>
-		<false/>
-	</dict>
+	<true/>
 	<key>ProcessType</key>
 	<string>Interactive</string>
 	<key>StandardErrorPath</key>

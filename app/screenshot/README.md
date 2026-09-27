@@ -23,7 +23,7 @@ Pick a recording and the button says so:
   recording that is running.
 - **After the shot.** A thumbnail sits in the corner for five seconds, with Pin and Delete.
   A pinned capture stays in the top-right corner until you close it.
-- **Recent.** The menu-bar icon keeps the last 20 captures, whatever folder they went to.
+- **Nothing in the menu bar.** It runs as a LaunchAgent, invisible, and only answers ⌘⇧5.
 
 ## Options
 
