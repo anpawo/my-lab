@@ -120,14 +120,36 @@ final class Bar: NSPanel, NSMenuDelegate {
     }
 
     /// The bar as pixels, at 2×, without ever being on screen.
-    func render() -> Data? {
-        let view = contentView!
-        let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(view.bounds.width * 2), pixelsHigh: Int(view.bounds.height * 2),
+    func render() -> Data? { Bar.pixels(contentView!).representation(using: .png, properties: [:]) }
+
+    /// The bar with the hint of button `i` above it, as the hover shows them, still never on screen.
+    func render(hovering i: Int) -> NSBitmapImageRep {
+        let b = buttons[i]
+        hint.place(b.toolTip!, above: b, in: self)
+        let all = frame.union(hint.frame)
+        return Bar.canvas(all.size) {
+            Bar.pixels(contentView!).draw(in: frame.offsetBy(dx: -all.minX, dy: -all.minY))
+            Bar.pixels(hint.contentView!).draw(in: hint.frame.offsetBy(dx: -all.minX, dy: -all.minY))
+        }
+    }
+
+    static func pixels(_ view: NSView) -> NSBitmapImageRep {
+        let rep = canvas(view.bounds.size) {}
+        view.cacheDisplay(in: view.bounds, to: rep)
+        return rep
+    }
+
+    /// A blank 2× bitmap of `size` points, drawn into by `draw`.
+    static func canvas(_ size: CGSize, _ draw: () -> Void) -> NSBitmapImageRep {
+        let rep = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(size.width * 2), pixelsHigh: Int(size.height * 2),
                                    bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
                                    colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0)!
-        rep.size = view.bounds.size
-        view.cacheDisplay(in: view.bounds, to: rep)
-        return rep.representation(using: .png, properties: [:])
+        rep.size = size
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        draw()
+        NSGraphicsContext.restoreGraphicsState()
+        return rep
     }
 
     private static let roundedMask: NSImage = {
@@ -282,13 +304,17 @@ final class Hint: NSPanel {
     override var canBecomeKey: Bool { false }
 
     func show(_ s: String, above button: NSView, in bar: NSWindow) {
+        place(s, above: button, in: bar)
+        orderFrontRegardless()
+    }
+
+    func place(_ s: String, above button: NSView, in bar: NSWindow) {
         text.stringValue = s
         text.sizeToFit()
         let size = CGSize(width: text.frame.width + 16, height: text.frame.height + 8)
         text.frame.origin = CGPoint(x: 8, y: 4)
         let b = bar.convertToScreen(button.convert(button.bounds, to: nil))
         setFrame(CGRect(x: (b.midX - size.width / 2).rounded(), y: b.maxY + 12, width: size.width, height: size.height), display: true)
-        orderFrontRegardless()
     }
 
     func hide() { orderOut(nil) }
