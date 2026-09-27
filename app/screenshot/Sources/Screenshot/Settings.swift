@@ -34,6 +34,10 @@ enum Settings {
         set { d.set(newValue, forKey: "microphone") }
     }
 
+    /// The built-in panel's corner radius in points. No API reports it, 12 got cut: a calibration
+    /// knob, `defaults write com.mr.screenshot screenCorner -float 20`.
+    static var screenCorner: CGFloat { d.object(forKey: "screenCorner") as? CGFloat ?? 18 }
+
     static var bar: BarState {
         get { BarState(target: Target(rawValue: d.string(forKey: "target") ?? "") ?? .area,
                        kind: Kind(rawValue: d.string(forKey: "kind") ?? "") ?? .photo) }

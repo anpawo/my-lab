@@ -321,18 +321,11 @@ private final class OverlayView: NSView {
         }
     }
 
-    /// The display's own outline: round top corners on a notched panel, square everywhere else.
+    /// The display's own outline, inset by the stroke: a built-in panel (the one with a notch)
+    /// has four round corners that would eat a square frame's; an external one is square.
     private func screenFrame(_ r: CGRect) -> CGPath {
-        let top: CGFloat = screen.safeAreaInsets.top > 0 ? 12 : 0
-        let p = CGMutablePath()
-        p.move(to: CGPoint(x: r.minX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.minY))
-        p.addLine(to: CGPoint(x: r.maxX, y: r.maxY - top))
-        p.addArc(tangent1End: CGPoint(x: r.maxX, y: r.maxY), tangent2End: CGPoint(x: r.maxX - top, y: r.maxY), radius: top)
-        p.addLine(to: CGPoint(x: r.minX + top, y: r.maxY))
-        p.addArc(tangent1End: CGPoint(x: r.minX, y: r.maxY), tangent2End: CGPoint(x: r.minX, y: r.maxY - top), radius: top)
-        p.closeSubpath()
-        return p
+        let radius = screen.safeAreaInsets.top > 0 ? max(Settings.screenCorner - 1, 0) : 0
+        return CGPath(roundedRect: r, cornerWidth: radius, cornerHeight: radius, transform: nil)
     }
 
     private func pixels(_ r: CGRect) -> String {
