@@ -14,7 +14,7 @@ final class Session {
     var selection: CGRect? = Settings.lastRect
     var hoverWindow: WindowInfo?
     var hoverScreen: NSScreen?
-    private(set) var windows: [WindowInfo] = []
+    var windows: [WindowInfo] = []   // set by Docs too
     private var overlays: [Overlay] = []
     private var bar: Bar?
     private let recorder = Recorder()

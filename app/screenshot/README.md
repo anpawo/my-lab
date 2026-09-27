@@ -8,6 +8,16 @@ moment you click, not five seconds later.
 Press ⌘⇧5. The screen freezes and dims, the bar comes up at the bottom, and you pick what to
 take: the entire screen, a window, or a portion you drag out — as a still or as a recording.
 
+![The three modes over the same windows: the whole screen dimmed in a round white frame; one window washed in blue and framed, minus the corner another window covers; a dashed selection across two windows, the rest dimmed](docs/modes.png)
+
+- **Entire Screen** — everything stays dimmed, framed in white along the display's round corners.
+- **Selected Window** — no dimming: the window under the pointer turns light blue in a white
+  frame, and the highlight stops where another window sits in front of it.
+- **Selected Portion** — the screen is dimmed except the box you drag, with its handles and its
+  size in pixels.
+
+The recordings show the same thing for the same targets.
+
 ![The bar: close, three stills, three recordings, Options, Capture](docs/bar.png)
 
 Hovering a button names its mode, with none of a tooltip's delay:
@@ -48,6 +58,6 @@ swift run -c release check
 Turn the system's own ⌘⇧5 off first: System Settings → Keyboard → Keyboard Shortcuts →
 Screenshots. The app needs Screen Recording, and asks for it the first time.
 
-The pictures above are drawn by the app's own views, offscreen, over a stock wallpaper:
+The pictures above are drawn by the app's own views, offscreen, over a stock wallpaper and stand-in windows:
 `.build/release/screenshot --render-docs docs`. The bar is drawn flat there: the blur of the
 desktop behind it only exists on screen.
