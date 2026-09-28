@@ -8,7 +8,7 @@ in most-recently-used order, with its own title and a picture of itself.
 
 Hold ⌥ and press Tab. Let ⌥ go and you are there. That is the whole product.
 
-![The panel over the desktop: twelve invented windows, six to a row, the selected one lit](docs/panel.png)
+![The panel with real windows: ten of them, six to a row, the selected one lit](docs/panel.png)
 
 **⌥Tab by default, and not ⌘Tab, on purpose.** The Dock consumes ⌘Tab before any application
 sees it, so holding that chord means switching Apple's switcher off — and that setting outlives
@@ -132,7 +132,7 @@ alt-tab --render --demo --shot=docs/panel.png   # the whole screen, with invente
 All of them build the real panel and run the real layout; none orders the window in. Without
 `--demo` the windows in the picture are whatever is open at the time, which is someone's work;
 `--demo` swaps them for apps everyone has, titles that belong to no one and hand-drawn
-pictures. The picture above was made with it.
+pictures. The picture above is not: it shows real windows, two spreadsheets blurred.
 
 ## What it does not do
 
