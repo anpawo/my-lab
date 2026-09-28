@@ -133,12 +133,11 @@ private final class OverlayView: NSView {
         case .window:
             if let w = session.windows.first(where: { $0.frame.contains(p) }) { session.commit(window: w) }
         case .area:
-            // Like the system: with a selection up, corners and edges resize it, its inside moves
-            // it, and only ⌘-click starts a fresh one from the cursor.
+            // With a selection up, corners and edges resize it, its inside moves it, and a drag
+            // outside (or ⌘-drag anywhere) replaces it; a bare click outside keeps it.
             if let r = session.selection, !event.modifierFlags.contains(.command) {
                 if let i = handle(of: r, at: p) { drag = .resize(i); return }
                 if r.contains(p) { drag = .move(CGPoint(x: p.x - r.minX, y: p.y - r.minY)); return }
-                return
             }
             drag = .new(p)
         }
