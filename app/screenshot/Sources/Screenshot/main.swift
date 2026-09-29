@@ -32,6 +32,14 @@ final class App: NSObject, NSApplicationDelegate {
             }
             return
         }
+        // Two copies (a login item next to the LaunchAgent) both take ⌘⇧5 and stack two overlays:
+        // a click closes the top one and uncovers the other. The newer one leaves.
+        let me = NSRunningApplication.current
+        if NSRunningApplication.runningApplications(withBundleIdentifier: Bundle.main.bundleIdentifier ?? "")
+            .contains(where: { $0 != me && ($0.launchDate ?? .distantPast) <= (me.launchDate ?? .now) }) {
+            NSLog("screenshot: already running")
+            exit(0)
+        }
         HotKey.register(key: kVK_ANSI_5, modifiers: cmdKey | shiftKey, id: 1) {
             Task { @MainActor in Session.shared.toggle() }
         }

@@ -57,14 +57,21 @@ enum Capture {
 
     /// With its shadow on a transparent background, like ⌘⇧4-space; without, like ⌥-click there.
     static func window(_ w: WindowInfo, shadow: Bool) async throws -> CGImage {
-        guard let sc = try await content().windows.first(where: { $0.windowID == w.id }) else { throw ShotError.noWindow }
-        let filter = SCContentFilter(desktopIndependentWindow: sc)
+        let filter = SCContentFilter(desktopIndependentWindow: try await window(w.id))
         let config = SCStreamConfiguration()
         config.ignoreShadowsSingleWindow = !shadow
         let scale = CGFloat(filter.pointPixelScale)
         config.width = Int(filter.contentRect.width * scale)
         config.height = Int(filter.contentRect.height * scale)
         return try await shoot(filter, config)
+    }
+
+    /// The cache is as old as the last capture: a window opened since is missing from it.
+    static func window(_ id: CGWindowID) async throws -> SCWindow {
+        if let w = try await content().windows.first(where: { $0.windowID == id }) { return w }
+        cached = nil
+        guard let w = try await content().windows.first(where: { $0.windowID == id }) else { throw ShotError.noWindow }
+        return w
     }
 
     private static func shoot(_ filter: SCContentFilter, _ config: SCStreamConfiguration) async throws -> CGImage {

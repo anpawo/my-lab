@@ -181,8 +181,8 @@ final class Session {
                     let (_, filter) = try await Capture.displayFilter(s)
                     try await recorder.start(filter: filter, size: s.frame.size, scale: s.backingScaleFactor)
                 case .window:
-                    guard let w = window, let sc = try await Capture.content().windows.first(where: { $0.windowID == w.id }) else { return }
-                    let filter = SCContentFilter(desktopIndependentWindow: sc)
+                    guard let w = window else { return }
+                    let filter = SCContentFilter(desktopIndependentWindow: try await Capture.window(w.id))
                     try await recorder.start(filter: filter, size: filter.contentRect.size, scale: CGFloat(filter.pointPixelScale))
                 case .area:
                     let r = rect!.integral
