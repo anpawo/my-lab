@@ -1,25 +1,48 @@
 #!/usr/bin/env bash
-# Builds, installs to ~/Applications, and starts it. Keeping it running is revive's job.
+# Builds, copies to ~/Applications, and registers a LaunchAgent: it starts at login and comes
+# back if anything kills it. Not `open -a`: an app opened from a Claude Code session is reaped by
+# Fleet once that session ends (see screenshot's install.sh).
 set -euo pipefail
 
 cd "$(dirname "$0")"
 
+LABEL="app.alt-tab"
 DEST="$HOME/Applications/Alt-tab.app"
+PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 
 # The one build path; --arch native because this machine is the only one that will run it.
 python3 build.py --arch native
 
 echo "==> Installing to $DEST"
-mkdir -p "$HOME/Applications"
+launchctl bootout "gui/$UID/$LABEL" 2>/dev/null || true
 pkill -f "Alt-tab.app/Contents/MacOS/alt-tab" 2>/dev/null || true
-rm -rf "$DEST"
-cp -R dist/Alt-tab.app "$DEST"
+rm -rf "$DEST"; mkdir -p "$HOME/Applications"; cp -R dist/Alt-tab.app "$DEST"
 
 echo "==> Starting"
-# No LaunchAgent of its own any more: `revive` (fr.marius.revive) checks every 30 s that the
-# programs that must always be running are, and restarts the ones that are not — alt-tab is
-# one line in its list. One plist for all of them rather than one per app.
-open -a "$DEST" --args --agent
+cat > "$PLIST" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>$LABEL</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>$DEST/Contents/MacOS/alt-tab</string>
+		<string>--agent</string>
+	</array>
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>StandardErrorPath</key>
+	<string>/tmp/alt-tab.log</string>
+</dict>
+</plist>
+EOF
+launchctl bootstrap "gui/$UID" "$PLIST"
 
 echo
 echo "Installed, and invisible: no Dock icon and nothing in the menu bar."
