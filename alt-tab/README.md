@@ -33,11 +33,13 @@ at all.
 
 ## Install
 
-**Download** the latest release, unzip it, and move `Alt-tab.app` to `~/Applications`.
+**Download** [the latest release](https://github.com/anpawo/my-lab/releases?q=alt-tab), unzip
+it, and move `Alt-tab.app` to `~/Applications`.
 
 macOS will refuse to open it the first time: the release is signed ad-hoc, which is what an
-app signed by nobody looks like. **Right-click it → Open**, then confirm. You only do this
-once.
+app signed by nobody looks like. Open it once, then go to **System Settings → Privacy &
+Security → Open Anyway**; before macOS 15, right-click it → Open does the same. You only do
+this once.
 
 Then open the app. It puts up its settings window, where you can tick **Start at login**.
 

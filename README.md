@@ -60,11 +60,13 @@ at all.
 
 ## Install
 
-**Download** the latest release, unzip it, and move `Alt-tab.app` to `~/Applications`.
+**Download** [the latest release](https://github.com/anpawo/my-lab/releases?q=alt-tab), unzip
+it, and move `Alt-tab.app` to `~/Applications`.
 
 macOS will refuse to open it the first time: the release is signed ad-hoc, which is what an
-app signed by nobody looks like. **Right-click it → Open**, then confirm. You only do this
-once.
+app signed by nobody looks like. Open it once, then go to **System Settings → Privacy &
+Security → Open Anyway**; before macOS 15, right-click it → Open does the same. You only do
+this once.
 
 Then open the app. It puts up its settings window, where you can tick **Start at login**.
 
@@ -241,6 +243,16 @@ The Options menu, from top to bottom:
 
 The same settings are `defaults write com.mr.screenshot <key> <value>`.
 
+## Install
+
+**Download** [the latest release](https://github.com/anpawo/my-lab/releases?q=screenshot),
+unzip it, and move `mr. screenshot.app` to `~/Applications`. Apple Silicon only.
+
+macOS will refuse to open it the first time: the release is signed ad-hoc, which is what an
+app signed by nobody looks like. Open it once, then go to **System Settings → Privacy &
+Security → Open Anyway**. Opened by hand it runs until you log out; building it with
+`./install.sh`, below, is what makes it start at login.
+
 ## Build
 
 Swift, Command Line Tools only — no Xcode.
@@ -248,6 +260,7 @@ Swift, Command Line Tools only — no Xcode.
 ```sh
 ./install.sh             # builds, installs to ~/Applications, starts it at login
 swift run -c release check
+./build.sh --release     # ad-hoc and zipped: what a download is made of
 ```
 
 Turn the system's own ⌘⇧5 off first: System Settings → Keyboard → Keyboard Shortcuts →

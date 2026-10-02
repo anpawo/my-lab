@@ -48,6 +48,16 @@ The Options menu, from top to bottom:
 
 The same settings are `defaults write com.mr.screenshot <key> <value>`.
 
+## Install
+
+**Download** [the latest release](https://github.com/anpawo/my-lab/releases?q=screenshot),
+unzip it, and move `mr. screenshot.app` to `~/Applications`. Apple Silicon only.
+
+macOS will refuse to open it the first time: the release is signed ad-hoc, which is what an
+app signed by nobody looks like. Open it once, then go to **System Settings → Privacy &
+Security → Open Anyway**. Opened by hand it runs until you log out; building it with
+`./install.sh`, below, is what makes it start at login.
+
 ## Build
 
 Swift, Command Line Tools only — no Xcode.
@@ -55,6 +65,7 @@ Swift, Command Line Tools only — no Xcode.
 ```sh
 ./install.sh             # builds, installs to ~/Applications, starts it at login
 swift run -c release check
+./build.sh --release     # ad-hoc and zipped: what a download is made of
 ```
 
 Turn the system's own ⌘⇧5 off first: System Settings → Keyboard → Keyboard Shortcuts →
