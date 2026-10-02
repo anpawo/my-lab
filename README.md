@@ -1,24 +1,25 @@
 # my-lab
 
-Two small macOS apps I made for my own Mac, too young or too small for a repo of their own.
-Both run on my machine today; neither is a demo.
+Little apps made for my needs. Each one is a folder at the root of this repo, and each one
+runs on my Mac today.
 
-**If you learned something here or took a piece of it home, leave a star.** It is the only
-signal I get that any of this was useful to someone else.
+## Using one
 
-| App | What it is |
-|---|---|
-| [`alt-tab`](alt-tab) | A macOS window switcher that only switches windows: ⌥Tab, one Space, icons and titles. |
-| [`screenshot`](screenshot) | A ⌘⇧5 replacement for macOS: the same bar and six modes, the file on disk the moment you click, pins, and an Options menu that saves to several folders at once. |
+```sh
+git clone https://github.com/anpawo/my-lab.git && cd my-lab/<app>
+./install.sh
+```
 
-![mr. screenshot: the bar under an area selection](screenshot/docs/overlay.png)
+`install.sh` builds the app, copies it to `~/Applications` and registers a launchd agent so it
+starts with your session. All it needs is a Swift toolchain and the Command Line Tools, no
+Xcode. Written for macOS on Apple Silicon. MIT, see [`LICENSE`](LICENSE).
 
-## Installing
+**If you took one home, leave a star.** It is the only signal I get that any of this was
+useful to someone else.
 
-Both are Swift with no Xcode needed: each app's `install.sh` builds it and installs it as a
-launchd agent. Each folder has its own README with the steps. Paths are written for macOS on
-Apple Silicon.
+## The apps
 
-## License
-
-MIT, see [`LICENSE`](LICENSE). `alt-tab` carries its own copy.
+- [alt-tab](alt-tab/README.md): a replacement for the ⌘Tab switcher of macOS, one tile per
+  window, each with a picture of itself.
+- [screenshot](screenshot/README.md): a ⌘⇧5 replacement, the same bar and six modes, the file
+  on disk the moment you click.
