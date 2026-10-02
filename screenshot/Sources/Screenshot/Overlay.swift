@@ -188,8 +188,9 @@ private final class OverlayView: NSView {
             }
             if r.contains(p) { return .openHand }
         }
-        // Outside the box the screen is veiled, where the dark cross would vanish.
-        return session.selection == nil ? .selection : .selectionLight
+        // The veil covers everything but the inside of the box — the whole screen when there is
+        // no box yet — and the dark cross vanishes on it.
+        return session.selection?.contains(p) == true ? .selection : .selectionLight
     }
 
     // MARK: Keyboard
