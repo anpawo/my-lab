@@ -17,7 +17,7 @@ window open is not in the list, Finder included.
 
 Hold the modifier and press Tab. Let it go and you are there. That is the whole product.
 
-![The switcher open over a real desktop: sixteen windows in three rows, the selected one outlined, the one under the pointer showing its close button, private ones blurred](docs/panel.png)
+![The switcher open over a desktop: eleven windows in two rows, the selected one outlined, the one under the pointer showing its close button](docs/panel.png)
 
 **It starts on ⌥Tab, and takes ⌘Tab when you tell it to.** The Dock consumes ⌘Tab before any
 application sees it, so holding that chord means switching Apple's switcher off — and that
@@ -142,7 +142,8 @@ All of them build the real panel and run the real layout; none orders the window
 `--demo` the windows in the picture are whatever is open at the time, which is someone's work;
 `--demo` swaps them for apps everyone has, titles that belong to no one and hand-drawn
 pictures. The picture at the top of this page is neither: it is a screenshot of the switcher
-in use, over my desktop, with the private windows blurred afterwards.
+in use, edited afterwards — the private windows taken out, the rest moved up to fill their
+places, and a stock wallpaper put behind it.
 
 ## What it does not do
 
