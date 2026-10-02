@@ -65,6 +65,15 @@ public func fileName(kind: String, app: String? = nil, ext: String, at date: Dat
     return "\(kind)\(app) \(f.string(from: date)).\(ext)"
 }
 
+/// By date, not by name: the app sits before the date in a name, so a shot without one sorts
+/// last and the history pruned it the moment it was written.
+public func newestFirst(_ urls: [URL]) -> [URL] {
+    func date(_ u: URL) -> Date {
+        (try? u.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
+    }
+    return urls.sorted { date($0) > date($1) }
+}
+
 /// `r` minus `cut`: up to four non-overlapping rects.
 public func subtract(_ r: CGRect, _ cut: CGRect) -> [CGRect] {
     let c = r.intersection(cut)

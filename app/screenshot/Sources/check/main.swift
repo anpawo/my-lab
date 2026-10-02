@@ -41,6 +41,15 @@ expect(BarState.all.count == 6, "six buttons, like the system")
 let name = fileName(kind: "Screenshot", app: "Safari/Beta", ext: "png", at: Date(timeIntervalSince1970: 0))
 expect(name.hasPrefix("Screenshot Safari-Beta 1970-01-01 at ") && name.hasSuffix(".png"), "file name: \(name)")
 
+let tmp = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+try! FileManager.default.createDirectory(at: tmp, withIntermediateDirectories: true)
+let old = tmp.appendingPathComponent("Screenshot Zed 2020.png"), new = tmp.appendingPathComponent("Screenshot 2026.png")
+for (u, d) in [(old, Date(timeIntervalSince1970: 0)), (new, Date())] {
+    FileManager.default.createFile(atPath: u.path, contents: nil)
+    try! FileManager.default.setAttributes([.modificationDate: d], ofItemAtPath: u.path)
+}
+expect(newestFirst([old, new]) == [new, old], "history is newest first by date, whatever the names")
+try? FileManager.default.removeItem(at: tmp)
 
 let base = CGRect(x: 0, y: 0, width: 100, height: 100)
 expect(subtract(base, CGRect(x: 200, y: 0, width: 10, height: 10)) == [base], "no overlap leaves the rect whole")

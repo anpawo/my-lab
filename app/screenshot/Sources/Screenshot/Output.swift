@@ -61,6 +61,6 @@ enum Output {
 
     static func recent() -> [URL] {
         let urls = (try? FileManager.default.contentsOfDirectory(at: Settings.history, includingPropertiesForKeys: nil)) ?? []
-        return urls.filter { !$0.lastPathComponent.hasPrefix(".") }.sorted { $0.lastPathComponent > $1.lastPathComponent }
+        return newestFirst(urls.filter { !$0.lastPathComponent.hasPrefix(".") })
     }
 }
