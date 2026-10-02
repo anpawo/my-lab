@@ -29,11 +29,7 @@ final class Bar: NSPanel, NSMenuDelegate {
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
 
         acceptsMouseMovedEvents = true
-        let back = NSVisualEffectView()
-        back.material = .popover
-        back.state = .active
-        // An effect view ignores its layer's corner radius; its mask image is what rounds it.
-        back.maskImage = Bar.roundedMask
+        let back = Ground()
         contentView = back
         // The overlay sets its own cursor on every move; the bar takes the arrow back.
         back.addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect], owner: self))
@@ -152,16 +148,6 @@ final class Bar: NSPanel, NSMenuDelegate {
         return rep
     }
 
-    private static let roundedMask: NSImage = {
-        let img = NSImage(size: CGSize(width: 26, height: 26), flipped: false) { r in
-            NSBezierPath(roundedRect: r, xRadius: 12, yRadius: 12).fill()
-            return true
-        }
-        img.capInsets = NSEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
-        img.resizingMode = .stretch
-        return img
-    }()
-
     private static func divider(at x: CGFloat) -> NSView {
         let v = NSView(frame: CGRect(x: x, y: (Bar.height - 22) / 2, width: 1, height: 22))
         v.wantsLayer = true
@@ -241,6 +227,16 @@ final class Bar: NSPanel, NSMenuDelegate {
         if panel.runModal() == .OK, let url = panel.url, !Settings.folders.contains(where: { $0.path == url.path }) {
             Settings.folders.append(url)
         }
+    }
+}
+
+/// The bar's ground: one opaque gray. A material let the desktop show through and changed
+/// colour with whatever was behind it.
+private final class Ground: NSView {
+    override func draw(_ dirtyRect: NSRect) {
+        let dark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        NSColor(white: dark ? 0.29 : 0.93, alpha: 1).setFill()
+        NSBezierPath(roundedRect: bounds, xRadius: 12, yRadius: 12).fill()
     }
 }
 

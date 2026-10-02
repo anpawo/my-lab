@@ -267,8 +267,7 @@ Turn the system's own ⌘⇧5 off first: System Settings → Keyboard → Keyboa
 Screenshots. The app needs Screen Recording, and asks for it the first time.
 
 The pictures above are drawn by the app's own views, offscreen, over a stock wallpaper and stand-in windows:
-`.build/release/screenshot --render-docs docs`. The bar is drawn flat there: the blur of the
-desktop behind it only exists on screen.
+`.build/release/screenshot --render-docs docs`.
 
 </details>
 <!-- apps:end -->
