@@ -36,8 +36,7 @@ build can be signed with a certificate of your own, and macOS then keeps the Acc
 grant across rebuilds instead of asking again every time.
 
 ```sh
-git clone https://github.com/anpawo/my-lab.git && cd my-lab/app
-cd alt-tab
+git clone https://github.com/anpawo/my-lab.git && cd my-lab/alt-tab
 ./install.sh
 ```
 
