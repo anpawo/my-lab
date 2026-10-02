@@ -1,25 +1,35 @@
 # alt-tab
 
-A macOS window switcher that only switches windows. ⌥Tab, one Space, icons and titles.
+A replacement for the ⌘Tab switcher of macOS: one tile per window, each with a picture of
+itself.
 
-macOS switches *applications*. ⌘Tab lands you on an app and leaves you to find which of its
-six windows you meant. This switches windows: every window on the desktop you are looking at,
-in most-recently-used order, with its own title and a picture of itself.
+The switcher that ships with macOS gets three things wrong:
 
-Hold ⌥ and press Tab. Let ⌥ go and you are there. That is the whole product.
+- **Finder is always in it**, even with no Finder window open — a slot spent on something you
+  never switch to.
+- **It switches applications, not windows.** Two windows of the same app are one icon; you land
+  on the app and are left to find which window you meant.
+- **It shows the app's icon**, not what is in the window.
 
-![The panel with real windows: ten of them, six to a row, the selected one lit](docs/panel.png)
+alt-tab lists windows instead: every window on the desktop you are looking at, in
+most-recently-used order, each with its own title and a small picture of itself. An app with no
+window open is not in the list, Finder included.
 
-**⌥Tab by default, and not ⌘Tab, on purpose.** The Dock consumes ⌘Tab before any application
-sees it, so holding that chord means switching Apple's switcher off — and that setting outlives
-the app that changed it. A default that did so would take the machine's switcher away from
-someone who asked for nothing. So alt-tab starts on a chord nobody owns: both switchers are
-there, you use one and then the other on the same desktop, and you decide.
+Hold the modifier and press Tab. Let it go and you are there. That is the whole product.
 
-If you decide on this one, **the settings will give you ⌘Tab**. alt-tab then switches the
-system chord off while it holds it, and hands it back when you quit it or run `./uninstall.sh`.
-If a crash ever leaves you without one, `alt-tab --restore-hotkeys` returns it, and it works
-with no GUI at all.
+![The whole screen with the switcher open: twelve windows in two rows of six, the selected one outlined](docs/panel.png)
+
+**It starts on ⌥Tab, and takes ⌘Tab when you tell it to.** The Dock consumes ⌘Tab before any
+application sees it, so holding that chord means switching Apple's switcher off — and that
+setting outlives the app that changed it. A default that did so would take the machine's
+switcher away from someone who asked for nothing. So a fresh install starts on a chord nobody
+owns: both switchers are there, you use one and then the other on the same desktop, and you
+decide.
+
+Once you have decided, **the settings give it ⌘Tab**. alt-tab then switches the system chord
+off while it holds it, and hands it back when you quit it or run `./uninstall.sh`. If a crash
+ever leaves you without one, `alt-tab --restore-hotkeys` returns it, and it works with no GUI
+at all.
 
 ## Install
 
@@ -131,7 +141,7 @@ alt-tab --render --demo --shot=docs/panel.png   # the whole screen, with invente
 All of them build the real panel and run the real layout; none orders the window in. Without
 `--demo` the windows in the picture are whatever is open at the time, which is someone's work;
 `--demo` swaps them for apps everyone has, titles that belong to no one and hand-drawn
-pictures. The picture above is not: it shows real windows, two spreadsheets blurred.
+pictures. That is the picture at the top of this page.
 
 ## What it does not do
 
