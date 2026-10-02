@@ -31,8 +31,9 @@ Pick a recording and the button says so:
 - **Keys.** ⌘← ⌘→ step through the modes, the arrows nudge the selection (⇧ by 10, ⌥ resizes),
   Return takes it, Escape closes. ⌘⇧5 again flips between still and recording, and stops a
   recording that is running.
-- **After the shot.** A thumbnail sits in the corner for five seconds, with Pin and Delete.
-  A pinned capture stays in the top-right corner until you close it.
+- **After the shot.** A thumbnail sits in the corner for eight seconds, with Pin and Delete.
+  A pinned capture stays in the top-right corner: a click copies it, a double click opens the
+  file, a right click unpins it.
 - **Nothing in the menu bar.** It runs as a LaunchAgent, invisible, and only answers ⌘⇧5.
 
 ## Options

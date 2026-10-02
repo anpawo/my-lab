@@ -1,6 +1,6 @@
 import AppKit
 
-/// The corner card after a capture. Five seconds, paused under the mouse; the file is already
+/// The corner card after a capture. Eight seconds, paused under the mouse; the file is already
 /// written, unlike the system's, whose card *is* the wait.
 @MainActor
 final class Thumbnail: NSPanel {
@@ -89,7 +89,7 @@ final class Thumbnail: NSPanel {
 
     func arm() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 5, repeats: false) { [weak self] _ in
+        timer = Timer.scheduledTimer(withTimeInterval: 8, repeats: false) { [weak self] _ in
             Task { @MainActor in self?.dismiss() }
         }
     }

@@ -1,8 +1,9 @@
 import AppKit
 
 /// A capture kept in the top-right corner, thumbnail-sized, until closed. Pins stack downward
-/// and the next thumbnails appear under them. A click offers Copy, Open, Close.
-final class Pin: NSPanel, NSMenuDelegate {
+/// and the next thumbnails appear under them. A click copies, a double click opens the file,
+/// a right click unpins.
+final class Pin: NSPanel {
     private static var pins: [Pin] = []
     private let url: URL
     private let screenOf: NSScreen
@@ -55,20 +56,11 @@ final class Pin: NSPanel, NSMenuDelegate {
 
     override var canBecomeKey: Bool { false }
 
-    func menu(at point: CGPoint) {
-        let menu = NSMenu()
-        for (title, sel) in [("Copy", #selector(copyImage)), ("Open", #selector(open)), ("Close", #selector(dismiss))] {
-            let m = menu.addItem(withTitle: title, action: sel, keyEquivalent: "")
-            m.target = self
-        }
-        menu.popUp(positioning: nil, at: point, in: contentView)
-    }
-
-    @objc private func copyImage() {
+    func copyImage() {
         if let png = try? Data(contentsOf: url) { Output.copy(png, url: url) }
     }
-    @objc private func open() { NSWorkspace.shared.open(url) }
-    @objc func dismiss() {
+    func open() { NSWorkspace.shared.open(url) }
+    func dismiss() {
         orderOut(nil)
         Pin.pins.removeAll { $0 === self }
         Pin.restack(on: screenOf)
@@ -87,6 +79,7 @@ final class Pin: NSPanel, NSMenuDelegate {
         }
         required init?(coder: NSCoder) { nil }
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-        override func mouseDown(with event: NSEvent) { pin.menu(at: convert(event.locationInWindow, from: nil)) }
+        override func mouseDown(with event: NSEvent) { if event.clickCount == 2 { pin.open() } else { pin.copyImage() } }
+        override func rightMouseDown(with event: NSEvent) { pin.dismiss() }
     }
 }
