@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Builds and signs dist/mr. screenshot.app. Does not install: `./install.sh` does.
+# Builds and signs dist/screenshot.app. Does not install: `./install.sh` does.
 # Self-signed "Shot Self-Signed" if present (./make-signing-identity.sh), else ad-hoc — and an
 # ad-hoc signature loses the Screen Recording grant at every rebuild.
 # `./build.sh --release` is what a download is made of: ad-hoc whatever the keychain holds,
 # since that certificate is trusted nowhere but here, and zipped.
 set -euo pipefail
 cd "$(dirname "$0")"
-APP="dist/mr. screenshot.app"
+APP="dist/screenshot.app"
 swift run -c release check
 swift build -c release --product screenshot
 rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS"
@@ -20,7 +20,7 @@ else
   codesign --force --sign - "$APP"
 fi
 if [[ "${1:-}" == "--release" ]]; then
-  ZIP="dist/mr-screenshot-$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist).zip"
+  ZIP="dist/screenshot-$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' Resources/Info.plist).zip"
   # ditto, not zip: it keeps the signature intact.
   rm -f "$ZIP"; ditto -c -k --keepParent "$APP" "$ZIP"
   echo "==> $ZIP"

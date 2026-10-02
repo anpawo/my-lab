@@ -1,4 +1,4 @@
-# mr. screenshot
+# screenshot
 
 A ⌘⇧5 replacement for macOS: the same bar, the same six modes, and a file that is on disk the
 moment you click, not five seconds later.
@@ -51,7 +51,7 @@ The same settings are `defaults write com.mr.screenshot <key> <value>`.
 ## Install
 
 **Download** [the latest release](https://github.com/anpawo/my-lab/releases?q=screenshot),
-unzip it, and move `mr. screenshot.app` to `~/Applications`. Apple Silicon only.
+unzip it, and move `screenshot.app` to `~/Applications`. Apple Silicon only.
 
 macOS will refuse to open it the first time: the release is signed ad-hoc, which is what an
 app signed by nobody looks like. Open it once, then go to **System Settings → Privacy &
