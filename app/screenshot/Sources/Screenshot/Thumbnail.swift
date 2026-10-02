@@ -12,7 +12,7 @@ final class Thumbnail: NSPanel {
     private static var current: Thumbnail?
     private let content: Content
     private var timer: Timer?
-    private var buttons: [NSButton] = []
+    private var buttons: [NSImageView] = []
 
     static func show(_ content: Content) {
         guard Settings.thumbnail else { return }
@@ -55,17 +55,14 @@ final class Thumbnail: NSPanel {
             view.addSubview(label("Recording", in: view.bounds))
         }
         if case .image = content {
-            // White symbols on dark discs, so they read on any picture. Shown while hovered.
-            for (i, (symbol, action, tip)) in [("pin", #selector(pin), "Pin"), ("trash", #selector(trash), "Delete")].enumerated() {
-                let b = NSButton(image: NSImage(systemSymbolName: symbol, accessibilityDescription: tip)!, target: self, action: action)
-                b.isBordered = false
-                b.imagePosition = .imageOnly
+            // Each half of the card is a button: a white symbol on a tint, so it reads on any
+            // picture. Not NSButtons, which would swallow the drag. Shown while hovered.
+            for (i, (symbol, tip)) in [("pin", "Pin"), ("trash", "Delete")].enumerated() {
+                let b = NSImageView(image: NSImage(systemSymbolName: symbol, accessibilityDescription: tip)!)
                 b.contentTintColor = .white
                 b.toolTip = tip
                 b.wantsLayer = true
-                b.layer?.backgroundColor = NSColor(white: 0, alpha: 0.65).cgColor
-                b.layer?.cornerRadius = 13
-                b.frame = CGRect(x: 8 + CGFloat(i) * 32, y: frame.height - 34, width: 26, height: 26)
+                b.frame = CGRect(x: CGFloat(i) * frame.width / 2, y: 0, width: frame.width / 2, height: frame.height)
                 b.isHidden = true
                 view.addSubview(b)
                 buttons.append(b)
@@ -94,7 +91,21 @@ final class Thumbnail: NSPanel {
         }
     }
     func hold() { timer?.invalidate() }
-    func hover(_ on: Bool) { buttons.forEach { $0.isHidden = !on } }
+    /// The half under the mouse goes darker than the other; nil hides both.
+    func hover(_ p: CGPoint?) {
+        for b in buttons {
+            b.isHidden = p == nil
+            b.layer?.backgroundColor = NSColor(white: 0, alpha: p.map(b.frame.contains) == true ? 0.5 : 0.25).cgColor
+        }
+    }
+
+    func click(at p: CGPoint) {
+        switch buttons.firstIndex(where: { $0.frame.contains(p) }) {
+        case 0: pin()
+        case 1: trash()
+        default: open()
+        }
+    }
 
     func dismiss() {
         timer?.invalidate()
@@ -113,12 +124,12 @@ final class Thumbnail: NSPanel {
         dismiss()
     }
 
-    @objc private func pin() {
+    private func pin() {
         if case .image(let img, let url, _) = content { Pin.show(img, url: url) }
         dismiss()
     }
 
-    @objc private func trash() {
+    private func trash() {
         try? FileManager.default.trashItem(at: url, resultingItemURL: nil)
         dismiss()
     }
@@ -135,14 +146,15 @@ final class Thumbnail: NSPanel {
             layer?.backgroundColor = NSColor(white: 0.15, alpha: 0.95).cgColor
             layer?.borderColor = NSColor.white.withAlphaComponent(0.8).cgColor
             layer?.borderWidth = 2
-            addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+            addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .mouseMoved, .activeAlways, .inVisibleRect], owner: self))
         }
         required init?(coder: NSCoder) { nil }
         override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-        override func mouseEntered(with event: NSEvent) { card.hold(); card.hover(true) }
-        override func mouseExited(with event: NSEvent) { card.arm(); card.hover(false) }
+        override func mouseEntered(with event: NSEvent) { card.hold(); card.hover(event.locationInWindow) }
+        override func mouseMoved(with event: NSEvent) { card.hover(event.locationInWindow) }
+        override func mouseExited(with event: NSEvent) { card.arm(); card.hover(nil) }
         override func mouseDown(with event: NSEvent) { down = event.locationInWindow }
-        override func mouseUp(with event: NSEvent) { if down != nil { card.open() }; down = nil }
+        override func mouseUp(with event: NSEvent) { if let down { card.click(at: down) }; down = nil }
         override func mouseDragged(with event: NSEvent) {
             guard let start = down, start.distance(to: event.locationInWindow) > 6 else { return }
             down = nil
