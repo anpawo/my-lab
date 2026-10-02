@@ -1,37 +1,24 @@
 # my-lab
 
-The little tools I have made for my own Mac, kept in one public place: two small apps (a
-window switcher and a screenshot tool), my Claude Code skills, hooks and display patch, the
-scripts and launchd jobs that keep the machine honest, two Firefox extensions, and the
-dotfiles behind my terminal. Everything here runs on my machine today; nothing is a demo.
+Two small macOS apps I made for my own Mac, too young or too small for a repo of their own.
+Both run on my machine today; neither is a demo.
 
 **If you learned something here or took a piece of it home, leave a star.** It is the only
 signal I get that any of this was useful to someone else.
 
-## Map
-
-| Folder | What is in it |
+| App | What it is |
 |---|---|
-| [`app/`](app) | Apps too young or too small for a repo of their own. `alt-tab`: a macOS window switcher that only switches windows (⌥Tab, one Space, icons and titles). `screenshot`: a ⌘⇧5 replacement with the same bar and six modes, and the file on disk the moment you click. |
-| [`bin/`](bin) | Commands I type by hand. `mem` (what is eating memory), `online` (run a command once the network is back, for cron jobs started without Wi-Fi). |
-| [`crons/`](crons) | launchd jobs, each folder holding the plist and the script it runs. `revive` restarts what died, `mac-guard` watches the machine's health. |
-| [`claude-code/`](claude-code) | How my Claude Code looks and behaves: a `MessageDisplay` hook that paints the answer and next-step lines, a patcher for the binary itself, a status line, a theme. And the skills that work in any project: `table` (a project's state as one icon table), `ck` (commit, push, close the session and its tab), `swift-macos` and `android-room-gradle` (verified toolchain traps), plus the `ww` command (explain the last answer again). Its README explains how the Bun binary is laid out and patched. |
-| [`firefox/`](firefox) | Two extensions with no build step, and the script that signs them on Mozilla's add-on server so release Firefox accepts them. |
-| [`dotfiles/`](dotfiles) | Ghostty, fish, zprofile, gitconfig, global gitignore. |
+| [`alt‑tab`](app/alt-tab) | A macOS window switcher that only switches windows: ⌥Tab, one Space, icons and titles. |
+| [`screenshot`](app/screenshot) | A ⌘⇧5 replacement for macOS: the same bar and six modes, the file on disk the moment you click, pins, and an Options menu that saves to several folders at once. |
 
-## Installing a piece
+![mr. screenshot: the bar under an area selection](app/screenshot/docs/overlay.png)
 
-Each folder has its own README with the copy-and-run steps. Nothing installs itself: every
-script is meant to be read before it is copied into `~/.local/bin` or `~/Library/LaunchAgents`.
-Paths are written for macOS on Apple Silicon with Homebrew under `/opt/homebrew`.
+## Installing
 
-## What is deliberately not here
-
-No credentials, no exported app data, no work tooling, and nothing that profiles a person:
-the `.gitignore` refuses the usual filenames, and each file was read before it was added.
-A skill is here only if it works in any project, for anyone.
-The private half of my setup (the full machine inventory and the work jobs) lives elsewhere.
+Both are Swift with no Xcode needed: each app's `install.sh` builds it and installs it as a
+launchd agent. Each folder has its own README with the steps. Paths are written for macOS on
+Apple Silicon.
 
 ## License
 
-MIT for everything I wrote, see [`LICENSE`](LICENSE). `app/alt-tab` carries its own copy.
+MIT, see [`LICENSE`](LICENSE). `app/alt-tab` carries its own copy.

@@ -3,8 +3,6 @@
 dist/
 *.err
 *.log
-.amo-upload-uuid
-.web-ext-config.cjs
 *.pem
 *.key
 *.p12
