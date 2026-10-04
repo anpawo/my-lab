@@ -1,4 +1,5 @@
 import AppKit
+import ScreenshotCore
 
 /// A capture kept in the top-right corner, thumbnail-sized, until closed. Pins stack downward
 /// and the next thumbnails appear under them. A click copies, a double click opens the file,
@@ -30,9 +31,8 @@ final class Pin: NSPanel {
         self.url = url
         let s = NSScreen.underMouse
         screenOf = s
-        let width = (s.visibleFrame.width / 10).rounded()
-        let height = (width * CGFloat(image.height) / CGFloat(image.width)).rounded()
-        super.init(contentRect: CGRect(x: 0, y: 0, width: width, height: height),
+        let size = cardSize(CGSize(width: image.width, height: image.height), side: (s.visibleFrame.width / 10).rounded())
+        super.init(contentRect: CGRect(origin: .zero, size: size),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = .floating
         isOpaque = false
@@ -50,7 +50,7 @@ final class Pin: NSPanel {
         iv.autoresizingMask = [.width, .height]
         view.addSubview(iv)
         contentView = view
-        setFrameOrigin(CGPoint(x: s.visibleFrame.maxX - width - 16, y: Pin.stackBottom(on: s) - height - 16))
+        setFrameOrigin(CGPoint(x: s.visibleFrame.maxX - size.width - 16, y: Pin.stackBottom(on: s) - size.height - 16))
         orderFrontRegardless()
     }
 

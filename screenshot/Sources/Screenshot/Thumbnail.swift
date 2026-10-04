@@ -1,4 +1,5 @@
 import AppKit
+import ScreenshotCore
 
 /// The corner card after a capture. Eight seconds, paused under the mouse; the file is already
 /// written, unlike the system's, whose card *is* the wait.
@@ -22,16 +23,16 @@ final class Thumbnail: NSPanel {
 
     private init(_ content: Content) {
         self.content = content
-        // A tenth of the screen wide, the capture's own aspect ratio, top-right corner.
+        // A tenth of the screen at most, the capture's own aspect ratio, top-right corner.
         let v = NSScreen.underMouse.visibleFrame
         let width = (v.width / 10).rounded()
-        var height = (width * 0.625).rounded()
+        var size = CGSize(width: width, height: (width * 0.625).rounded())
         switch content {
         case .image(let img, _, _), .movie(.some(let img), _):
-            height = (width * CGFloat(img.height) / CGFloat(img.width)).rounded()
+            size = cardSize(CGSize(width: img.width, height: img.height), side: width)
         default: break
         }
-        super.init(contentRect: CGRect(x: 0, y: 0, width: width, height: height),
+        super.init(contentRect: CGRect(origin: .zero, size: size),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = .floating
         isOpaque = false

@@ -19,6 +19,13 @@ public func appKit(_ r: CGRect, mainHeight: CGFloat) -> CGRect {
     CGRect(x: r.minX, y: mainHeight - r.maxY, width: r.width, height: r.height)
 }
 
+/// A corner card: the capture's aspect ratio inside a square of `side`. A wide capture fills
+/// the width; a tall one gets a narrower card rather than one that runs down the screen.
+public func cardSize(_ image: CGSize, side: CGFloat) -> CGSize {
+    let scale = side / max(image.width, image.height)
+    return CGSize(width: (image.width * scale).rounded(), height: (image.height * scale).rounded())
+}
+
 public func rect(from a: CGPoint, to b: CGPoint) -> CGRect {
     CGRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(a.x - b.x), height: abs(a.y - b.y))
 }
