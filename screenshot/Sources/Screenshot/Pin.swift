@@ -1,9 +1,8 @@
 import AppKit
-import ScreenshotCore
 
-/// A capture kept in the top-right corner, thumbnail-sized, until closed. Pins stack downward
-/// and the next thumbnails appear under them. A click copies, a double click opens the file,
-/// a right click unpins.
+/// A capture kept in the top-right corner until closed, centred on a 16:9 card whatever its
+/// shape. Pins stack downward and the next thumbnails appear under them. A click copies, a
+/// double click opens the file, a right click unpins.
 final class Pin: NSPanel {
     private static var pins: [Pin] = []
     private let url: URL
@@ -31,7 +30,8 @@ final class Pin: NSPanel {
         self.url = url
         let s = NSScreen.underMouse
         screenOf = s
-        let size = cardSize(CGSize(width: image.width, height: image.height), side: (s.visibleFrame.width / 10).rounded())
+        let width = (s.visibleFrame.width / 10).rounded()
+        let size = CGSize(width: width, height: (width * 9 / 16).rounded())
         super.init(contentRect: CGRect(origin: .zero, size: size),
                    styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = .floating
@@ -74,8 +74,9 @@ final class Pin: NSPanel {
             wantsLayer = true
             layer?.cornerRadius = 8
             layer?.masksToBounds = true
-            // Beside a narrow picture: a clear window lets clicks through, the ground takes them.
-            layer?.backgroundColor = NSColor(white: 0.15, alpha: 0.95).cgColor
+            // The bars around a picture that is not 16:9. Painted, they take clicks; a clear
+            // window would let them through.
+            layer?.backgroundColor = NSColor.black.cgColor
             layer?.borderColor = NSColor.white.withAlphaComponent(0.8).cgColor
             layer?.borderWidth = 2
         }
