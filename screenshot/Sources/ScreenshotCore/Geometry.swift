@@ -19,11 +19,13 @@ public func appKit(_ r: CGRect, mainHeight: CGFloat) -> CGRect {
     CGRect(x: r.minX, y: mainHeight - r.maxY, width: r.width, height: r.height)
 }
 
-/// A corner card: the capture's aspect ratio inside a square of `side`. A wide capture fills
-/// the width; a tall one gets a narrower card rather than one that runs down the screen.
+/// A corner card: `side` wide for a capture shaped like a screen, and never taller than that
+/// one. A taller capture is scaled to that height and centred on a card at least half as
+/// wide, so a narrow picture keeps ground to click on each side.
 public func cardSize(_ image: CGSize, side: CGFloat) -> CGSize {
-    let scale = side / max(image.width, image.height)
-    return CGSize(width: (image.width * scale).rounded(), height: (image.height * scale).rounded())
+    let scale = min(side / image.width, side * 0.625 / image.height)
+    return CGSize(width: max((image.width * scale).rounded(), (side / 2).rounded()),
+                  height: (image.height * scale).rounded())
 }
 
 public func rect(from a: CGPoint, to b: CGPoint) -> CGRect {

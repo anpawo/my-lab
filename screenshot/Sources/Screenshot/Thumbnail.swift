@@ -1,4 +1,5 @@
 import AppKit
+import AVFoundation
 import ScreenshotCore
 
 /// The corner card after a capture. Eight seconds, paused under the mouse; the file is already
@@ -23,7 +24,7 @@ final class Thumbnail: NSPanel {
 
     private init(_ content: Content) {
         self.content = content
-        // A tenth of the screen at most, the capture's own aspect ratio, top-right corner.
+        // Top-right corner, a tenth of the screen wide at most, the capture centred on it.
         let v = NSScreen.underMouse.visibleFrame
         let width = (v.width / 10).rounded()
         var size = CGSize(width: width, height: (width * 0.625).rounded())
@@ -48,7 +49,7 @@ final class Thumbnail: NSPanel {
         switch content {
         case .image(let img, _, _), .movie(.some(let img), _):
             let iv = NSImageView(frame: view.bounds)
-            iv.image = NSImage(cgImage: img, size: view.bounds.size)
+            iv.image = NSImage(cgImage: img, size: .zero)
             iv.imageScaling = .scaleProportionallyUpOrDown
             iv.autoresizingMask = [.width, .height]
             view.addSubview(iv)
@@ -160,7 +161,8 @@ final class Thumbnail: NSPanel {
             guard let start = down, start.distance(to: event.locationInWindow) > 6 else { return }
             down = nil
             let item = NSDraggingItem(pasteboardWriter: card.url as NSURL)
-            item.setDraggingFrame(bounds, contents: card.contentView?.subviews.compactMap { $0 as? NSImageView }.first?.image)
+            let image = card.contentView?.subviews.compactMap { $0 as? NSImageView }.first?.image
+            item.setDraggingFrame(image.map { AVMakeRect(aspectRatio: $0.size, insideRect: bounds) } ?? bounds, contents: image)
             beginDraggingSession(with: [item], event: event, source: self)
         }
         func draggingSession(_ s: NSDraggingSession, sourceOperationMaskFor c: NSDraggingContext) -> NSDragOperation { .copy }

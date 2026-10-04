@@ -17,8 +17,8 @@ expect(appKit(CGRect(x: 10, y: 20, width: 30, height: 40), mainHeight: 800)
 
 expect(cardSize(CGSize(width: 1600, height: 1000), side: 147) == CGSize(width: 147, height: 92),
        "a wide capture's card fills the width")
-expect(cardSize(CGSize(width: 294, height: 788), side: 147) == CGSize(width: 55, height: 147),
-       "a tall capture's card is no taller than a wide one is wide")
+expect(cardSize(CGSize(width: 294, height: 788), side: 147) == CGSize(width: 74, height: 92),
+       "a tall capture's card is no taller than a wide one, and stays wide enough to click")
 
 let bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
 let r = CGRect(x: 10, y: 10, width: 20, height: 20)

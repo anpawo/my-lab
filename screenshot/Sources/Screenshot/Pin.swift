@@ -45,7 +45,7 @@ final class Pin: NSPanel {
 
         let view = PinView(frame: CGRect(origin: .zero, size: frame.size), pin: self)
         let iv = NSImageView(frame: view.bounds)
-        iv.image = NSImage(cgImage: image, size: view.bounds.size)
+        iv.image = NSImage(cgImage: image, size: .zero)
         iv.imageScaling = .scaleProportionallyUpOrDown
         iv.autoresizingMask = [.width, .height]
         view.addSubview(iv)
@@ -74,6 +74,8 @@ final class Pin: NSPanel {
             wantsLayer = true
             layer?.cornerRadius = 8
             layer?.masksToBounds = true
+            // Beside a narrow picture: a clear window lets clicks through, the ground takes them.
+            layer?.backgroundColor = NSColor(white: 0.15, alpha: 0.95).cgColor
             layer?.borderColor = NSColor.white.withAlphaComponent(0.8).cgColor
             layer?.borderWidth = 2
         }
